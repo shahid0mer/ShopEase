@@ -15,7 +15,7 @@ await connectCloudinary();
 
 // "https://shopease-frontend-9sps.onrender.com"
 
-const allowedOrigin = ["https://shopease-frontend-9sps.onrender.com"];
+const allowedOrigin = ["https://shopease-frontend-2.onrender.com"];
 
 app.use(express.json());
 app.use(cookieParser());
