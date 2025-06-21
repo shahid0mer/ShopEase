@@ -13,9 +13,10 @@ const PORT = process.env.PORT || 3000;
 await connectDB();
 await connectCloudinary();
 
-// "https://shopease-frontend-9sps.onrender.com"
-
-const allowedOrigin = ["https://shopease-frontend-2.onrender.com"];
+const allowedOrigin = [
+  "https://shopease-frontend-2.onrender.com",
+  "http://localhost:5173",
+];
 
 app.use(express.json());
 app.use(cookieParser());

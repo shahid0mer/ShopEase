@@ -58,7 +58,7 @@ export const fetchCartAsync = createAsyncThunk(
         throw new Error("User not authenticated");
       }
 
-      const response = await axios.get(`${BASE_URL}/cart/view/${userId}`, {
+      const response = await axios.get(`${BASE_URL}/api/cart/view/${userId}`, {
         withCredentials: true,
       });
 
@@ -187,7 +187,6 @@ const cartSlice = createSlice({
         state.error = action.payload;
       })
 
-      
       .addCase(fetchCartAsync.pending, (state) => {
         state.status = "loading";
       })
