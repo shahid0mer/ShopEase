@@ -4,7 +4,7 @@ export const PRODUCT_URI = `${BASE_URL}/api/product/add`;
 export const GET_SELLER_PRODUCTS_URL = `${BASE_URL}/api/seller/viewall`;
 export const CHANGE_STOCK_URI = `${BASE_URL}/api/product/update`;
 
-export const CATEGORY_URI = "http://localhost:3000/api/category/view";
+export const CATEGORY_URI = `${BASE_URL}/api/category/view`;
 
 export const LOGIN_URL = `${BASE_URL}/api/user/login`;
 export const REGISTER_URL = `${BASE_URL}/api/user/register`;
