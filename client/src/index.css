@@ -1,0 +1,64 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
+
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --primary: #10b981; /* Brighter emerald (original: #059669) */
+    --primary-dark: #0d9488;
+    --primary-light: #d1fae5;
+
+    /*  (Secondary) */
+    --secondary: #d97706; /* Warm copper */
+    --secondary-dark: #b45309; /* Rich amber */
+    --secondary-light: #fef3c7; /* Creamy peach */
+
+    /* Airy Neutrals */
+    --neutral-50: #f8fafc; /* Nearly white */
+    --neutral-200: #e2e8f0; /* Very light gray */
+    --neutral-500: #64748b; /* Medium gray */
+    --neutral-700: #334155; /* Medium gray */
+    --neutral-800: #1e293b; /* Soft dark gray */
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1),
+      0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+      0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+      0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+    /* Border Radius */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+
+    /* Spacing Scale */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 0.75rem;
+    --space-lg: 1rem;
+    --space-xl: 1.5rem;
+    --space-2xl: 2rem;
+    --space-3xl: 3rem;
+    --space-4xl: 4rem;
+  }
+
+  *,
+  ::before,
+  ::after {
+    box-sizing: border-box;
+  }
+  body {
+    @apply font-inter;
+    background-color: var(--neutral-50);
+  }
+}
+
+@theme {
+  --font-inter: "Inter", sans-serif;
+  --font-montserrat: "Montserrat", sans-serif;
+  --neutral-50: #f8fafc;
+}
