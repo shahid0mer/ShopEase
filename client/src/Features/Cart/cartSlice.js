@@ -172,7 +172,7 @@ const cartSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Add to cart cases
+
       .addCase(addToCartAsync.pending, (state) => {
         state.status = "loading";
       })
@@ -181,14 +181,13 @@ const cartSlice = createSlice({
         state.cartItems = action.payload.cartItems;
         state.totalQuantity = action.payload.totalQuantity;
         state.totalAmount = action.payload.totalAmount;
-        console.log("Added to cart - items:", state.cartItems);
       })
       .addCase(addToCartAsync.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       })
 
-      // Fetch cart cases
+      
       .addCase(fetchCartAsync.pending, (state) => {
         state.status = "loading";
       })

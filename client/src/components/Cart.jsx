@@ -7,7 +7,6 @@ import {
 } from "../Features/Cart/cartSlice.js";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
-import AuthError from "../assets/AuthError.jsx";
 
 const Cart = () => {
   const [showAddress, setShowAddress] = useState(false);
@@ -31,14 +30,12 @@ const Cart = () => {
   const tax = Math.round(subtotal * 0.02);
   const total = subtotal + tax;
 
-  // Handle quantity change
   const handleQuantityChange = (itemId, newQuantity) => {
     dispatch(
       updateQuantity({ itemId: itemId, quantity: parseInt(newQuantity) })
     );
   };
 
-  // Handle item removal
   const handleRemoveItem = (itemId) => {
     dispatch(removeFromCart(itemId));
   };
@@ -56,7 +53,6 @@ const Cart = () => {
       <div className="flex justify-center items-center min-h-[400px]">
         <div className="font-montserrat  text-lg text-red-500">
           Please Login to View Your Cart
-          <AuthError />
         </div>
       </div>
     );
@@ -114,19 +110,19 @@ const Cart = () => {
                           alt={item.product_id.name || "Product"}
                           onError={(e) => {
                             e.target.style.display = "none";
-                            e.target.nextSibling.style.display = "block"; // Show "No Image Available"
+                            e.target.nextSibling.style.display = "block";
                           }}
                         />
                       ) : null}
-                      {/* Fallback for no image or image load error */}
+
                       <div
                         className="text-gray-400 text-sm text-center p-2"
                         style={{
                           display:
                             item.product_id?.images?.length > 0 &&
                             item.product_id.images[0]
-                              ? "none" // Hide if image exists
-                              : "block", // Show if no image or image path is empty/invalid
+                              ? "none"
+                              : "block",
                         }}
                       >
                         No Image Available
@@ -228,12 +224,10 @@ const Cart = () => {
           <h2 className="text-xl font-medium">Order Summary</h2>
           <hr className="border-gray-300 my-5" />
 
-          {/* Delivery Address Section */}
           <div className="mb-6">
             <p className="text-sm font-medium uppercase">Delivery Address</p>
             <div className="relative flex justify-between items-start mt-2">
               <p className="text-gray-500">No address found</p>{" "}
-              {/* This should ideally come from user profile/address data */}
               <button
                 onClick={() => setShowAddress(!showAddress)}
                 className="text-[var(--primary)] hover:underline cursor-pointer"
@@ -243,11 +237,9 @@ const Cart = () => {
               {showAddress && (
                 <div className="absolute top-8 py-1 bg-white border border-gray-300 text-sm w-full z-10">
                   {" "}
-                  {/* Added z-10 for layering */}
-                  {/* Example addresses - these would typically come from user data */}
                   <p
                     onClick={() => {
-                      //                      console.log("Address selected: New York, USA");
+                      //
                       setShowAddress(false);
                     }}
                     className="text-gray-500 p-2 hover:bg-gray-100 cursor-pointer"
@@ -256,7 +248,7 @@ const Cart = () => {
                   </p>
                   <p
                     onClick={() => {
-                      //                      console.log("Adding new address...");
+                      //
                       setShowAddress(false);
                     }}
                     className="text-indigo-500 text-center cursor-pointer p-2 hover:bg-indigo-500/10"
