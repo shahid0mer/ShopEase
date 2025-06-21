@@ -20,3 +20,5 @@ yarn-error.log*
 
 # OS-specific
 Thumbs.db
+
+server/ai.js

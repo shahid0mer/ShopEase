@@ -3,7 +3,7 @@ import electronicspng from "../assets/Categories/Electronics.webp";
 import Furniturepng from "../assets/Categories/Home & Furniture.webp";
 import grocerypng from "../assets/Categories/Grocery.webp";
 import appliancepng from "../assets/Categories/Appliances.webp";
-import cosmmeticspng from "../assets/Categories/Appliances.webp";
+import cosmmeticspng from "../assets/Categories/Cosmetics.webp";
 import { useDispatch } from "react-redux";
 import { fetchProductsByCategory } from "../Features/Product/productSlice";
 import { useNavigate } from "react-router-dom";
