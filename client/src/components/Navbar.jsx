@@ -16,6 +16,7 @@ import {
   FiSettings,
   FiLogOut,
 } from "react-icons/fi";
+import { fetchProductsWithFilters } from "../Features/Product/productSlice";
 
 const Navbar = ({ onLoginClick }) => {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ const Navbar = ({ onLoginClick }) => {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const profileMenuRef = useRef(null);
+  const [keyword, setKeyword] = useState("");
 
   const isSellerPage = location.pathname.startsWith("/seller");
   const { user, isAuthenticated } = useSelector((state) => state.auth);
@@ -132,14 +134,44 @@ const Navbar = ({ onLoginClick }) => {
       </div>
 
       {/* Search Input - Desktop */}
-      <div className="hidden md:block mx-4 flex-1 max-w-2xl">
-        <input
-          className="w-full backdrop-blur-md py-[var(--space-md)] px-[var(--space-lg)] bg-[#ffffffb3] focus:outline-0 focus:border-[var(--secondary)] rounded-sm"
-          type="search"
-          placeholder="Search here"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+      <div className="hidden md:flex mx-4 flex-1 min-w-[200px] max-w-2xl">
+        <div className="flex items-center border pl-4 gap-2 bg-white border-gray-500/30 h-[46px] rounded-full overflow-hidden w-full">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={30}
+            height={30}
+            viewBox="0 0 30 30"
+            fill="#6B7280"
+          >
+            <path d="M13 3C7.489 3 3 7.489 3 13s4.489 10 10 10a9.95 9.95 0 0 0 6.322-2.264l5.971 5.971a1 1 0 1 0 1.414-1.414l-5.97-5.97A9.95 9.95 0 0 0 23 13c0-5.511-4.489-10-10-10m0 2c4.43 0 8 3.57 8 8s-3.57 8-8 8-8-3.57-8-8 3.57-8 8-8" />
+          </svg>
+          <input
+            type="search"
+            className="w-full h-full outline-none text-[1.15rem] text-[var(--neutral-800)]"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <button
+            type="submit"
+            className="bg-[var(--secondary)] w-32 h-9 rounded-full text-sm text-white hover:bg-[var(--secondary-dark)] active:scale-90 transition-all mr-[5px]"
+            onClick={() => {
+              const trimmed = searchQuery.trim();
+              if (trimmed) {
+                dispatch(
+                  fetchProductsWithFilters({
+                    keyword: trimmed,
+                    page: 1,
+                    limit: 20, // or whatever default
+                    sort: "", // optional
+                  })
+                );
+                navigate(`/results?keyword=${encodeURIComponent(trimmed)}`);
+              }
+            }}
+          >
+            Search
+          </button>
+        </div>
       </div>
 
       {/* Desktop Navigation */}

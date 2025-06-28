@@ -129,9 +129,8 @@ const AddProduct = () => {
       const newImages = [...images];
       const draggedImage = newImages[dragIndex];
 
-      // Remove dragged image
       newImages.splice(dragIndex, 1);
-      // Insert at new position
+
       newImages.splice(dropIndex, 0, draggedImage);
 
       setImages(newImages);

@@ -14,103 +14,86 @@ export const getAllCategories = async (req, res) => {
   }
 };
 
-export const getPaginatedProductsWithFilter = asyncHandler(async (req, res) => {
-  const { categoryId } = req.params;
+export const getFilteredOrSearchedProducts = asyncHandler(async (req, res) => {
+  const {
+    page = 1,
+    limit = 20,
+    categoryId,
+    keyword,
+    minPrice,
+    maxPrice,
+    rating,
+    sort = "newest", // default fallback
+    brands,
+    colors,
+    sizes,
+  } = req.query;
 
-  // Validate and sanitize pagination parameters
-  const page = Math.max(1, parseInt(req.query.page)) || 1;
-  const limit = Math.min(50, Math.max(1, parseInt(req.query.limit)));
+  const sortKey = String(sort).trim().toLowerCase();
 
-  if (isNaN(page) || isNaN(limit)) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid pagination parameters",
-    });
-  }
   const skip = (page - 1) * limit;
 
-  // Validate ObjectId format
-  if (!mongoose.Types.ObjectId.isValid(categoryId)) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid category ID format",
-    });
+  const filterQuery = { inStock: true };
+
+  // If keyword is provided, use text search
+  if (keyword) {
+    filterQuery.$text = { $search: keyword };
   }
 
-  const baseQuery = {
-    category_id: categoryId,
-    inStock: true,
-  };
+  // If categoryId is valid, add category filter
+  if (categoryId && mongoose.Types.ObjectId.isValid(categoryId)) {
+    filterQuery.category_id = categoryId;
+  }
 
-  // Add optional filters if provided
-  const { minPrice, maxPrice, brands, colors, sizes, rating } = req.query;
-  const filterQuery = { ...baseQuery };
-
-  // Price range filter
+  // Price range
   if (minPrice || maxPrice) {
     filterQuery.price = {};
     if (minPrice) filterQuery.price.$gte = Number(minPrice);
     if (maxPrice) filterQuery.price.$lte = Number(maxPrice);
   }
 
-  // Brand filter (accepts both array and comma-separated string)
+  // Brand
   if (brands) {
     filterQuery.brand = {
       $in: Array.isArray(brands) ? brands : brands.split(","),
     };
   }
 
-  // Color filter
+  // Color
   if (colors) {
     filterQuery["attributes.color"] = {
       $in: Array.isArray(colors) ? colors : colors.split(","),
     };
   }
 
-  // Size filter
+  // Size
   if (sizes) {
     filterQuery["attributes.size"] = {
       $in: Array.isArray(sizes) ? sizes : sizes.split(","),
     };
   }
 
-  // Rating filter
+  // Rating
   if (rating) {
     filterQuery.rating = { $gte: Number(rating) };
   }
 
-  // Sorting options
-  let sortOption = {};
-  if (req.query.sort) {
-    switch (req.query.sort) {
-      case "price_asc":
-        sortOption.price = 1;
-        break;
-      case "price_desc":
-        sortOption.price = -1;
-        break;
-      case "rating":
-        sortOption.rating = -1;
-        break;
-      case "newest":
-        sortOption.createdAt = -1;
-        break;
-      case "popular":
-        sortOption.numReviews = -1;
-        break;
-      default:
-        sortOption.createdAt = -1;
-    }
-  }
+  // Sort options
+  const sortMap = {
+    price_asc: { offerPrice: 1 },
+    price_desc: { offerPrice: -1 },
+    rating: { rating: -1 },
+    newest: { createdAt: -1 },
+    popular: { numReviews: -1 },
+  };
 
   try {
-    // Get total count and products in parallel
     const [total, products] = await Promise.all([
       Product.countDocuments(filterQuery),
       Product.find(filterQuery)
-        .sort(sortOption)
+        .sort(sortMap[sortKey] || sortMap["newest"])
         .skip(skip)
-        .limit(limit)
+        .limit(Number(limit))
         .populate("category_id", "name slug")
         .select("-__v")
         .lean(),
@@ -119,41 +102,33 @@ export const getPaginatedProductsWithFilter = asyncHandler(async (req, res) => {
     if (!products.length) {
       return res.status(404).json({
         success: false,
-        message: "No products found matching your criteria",
-        availableFilters: {
-          minPrice: await Product.findOne(baseQuery)
-            .sort({ price: 1 })
-            .select("price"),
-          maxPrice: await Product.findOne(baseQuery)
-            .sort({ price: -1 })
-            .select("price"),
-          brands: await Product.distinct("brand", baseQuery),
-          colors: await Product.distinct("attributes.color", baseQuery),
-          sizes: await Product.distinct("attributes.size", baseQuery),
-        },
+        message: "No matching products found.",
       });
     }
+
+    // Optional: dynamic filter suggestions
+    const availableFilters = {
+      minPrice: await Product.findOne(filterQuery)
+        .sort({ price: 1 })
+        .select("price"),
+      maxPrice: await Product.findOne(filterQuery)
+        .sort({ price: -1 })
+        .select("price"),
+      brands: await Product.distinct("brand", filterQuery),
+      colors: await Product.distinct("attributes.color", filterQuery),
+      sizes: await Product.distinct("attributes.size", filterQuery),
+    };
 
     res.status(200).json({
       success: true,
       products,
       total,
-      page,
+      page: Number(page),
       pages: Math.ceil(total / limit),
-      filters: {
-        minPrice: await Product.findOne(filterQuery)
-          .sort({ price: 1 })
-          .select("price"),
-        maxPrice: await Product.findOne(filterQuery)
-          .sort({ price: -1 })
-          .select("price"),
-        brands: await Product.distinct("brand", filterQuery),
-        colors: await Product.distinct("attributes.color", filterQuery),
-        sizes: await Product.distinct("attributes.size", filterQuery),
-      },
+      filters: availableFilters,
     });
   } catch (error) {
-    console.error("Error fetching products:", error);
+    console.error("Product listing error:", error);
     res.status(500).json({
       success: false,
       message: "Server error while fetching products",

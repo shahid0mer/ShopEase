@@ -7,14 +7,20 @@ const userSchema = new mongoose.Schema(
     phone: { type: Number },
     address: { type: String },
     password: { type: String, required: true, minLength: 6 },
+    phone: {
+      type: Number,
+      unique: true,
+      required: false,
+      default: null,
+    },
     role: {
       type: String,
       enum: ["user", "seller", "admin"],
       default: "user",
     },
-    storeLogo: { type: String }, // specific to sellers
-    isVerified: { type: Boolean }, // seller verification
-    products: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }], // seller-specific
+    storeLogo: { type: String },
+    isVerified: { type: Boolean },
+    products: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
   },
   { timestamps: true }
 );

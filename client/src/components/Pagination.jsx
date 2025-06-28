@@ -2,37 +2,34 @@ import React from "react";
 import PropTypes from "prop-types";
 import { useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { fetchPaginatedProductsByCategory } from "../Features/Product/productSlice.js";
+import { fetchProductsWithFilters } from "../Features/Product/productSlice.js";
 
-const Pagination = ({ currentPage, totalPages, categoryId }) => {
+const Pagination = ({ currentPage, totalPages, categoryId, sort }) => {
   const [searchParams] = useSearchParams();
   const dispatch = useDispatch();
   const maxPageButtons = 5;
   const limit = 20;
 
   const handlePageChange = (newPage) => {
-    // Validate page number
     const pageNumber = Math.max(1, Math.min(newPage, totalPages));
-
-    // Update URL
     const newSearchParams = new URLSearchParams(searchParams);
     newSearchParams.set("page", pageNumber);
     window.history.pushState(null, "", `?${newSearchParams.toString()}`);
 
-    // Fetch new data
+    const paramsObj = Object.fromEntries(newSearchParams.entries());
     dispatch(
-      fetchPaginatedProductsByCategory({
+      fetchProductsWithFilters({
+        ...paramsObj,
         categoryId,
+        limit,
         page: pageNumber,
-        limit: limit,
+        sort,
       })
     );
 
-    // Scroll to top
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Calculate page range
   const getPageNumbers = () => {
     const half = Math.floor(maxPageButtons / 2);
     let startPage = Math.max(1, currentPage - half);
@@ -67,14 +64,7 @@ const Pagination = ({ currentPage, totalPages, categoryId }) => {
           }`}
           aria-label="Previous page"
         >
-          {/* Left arrow SVG */}
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path
               d="M15 18L9 12L15 6"
               stroke="currentColor"
@@ -137,14 +127,7 @@ const Pagination = ({ currentPage, totalPages, categoryId }) => {
           }`}
           aria-label="Next page"
         >
-          {/* Right arrow SVG */}
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path
               d="M9 18L15 12L9 6"
               stroke="currentColor"
@@ -163,6 +146,7 @@ Pagination.propTypes = {
   currentPage: PropTypes.number.isRequired,
   totalPages: PropTypes.number.isRequired,
   categoryId: PropTypes.string.isRequired,
+  sort: PropTypes.string,
 };
 
 export default Pagination;

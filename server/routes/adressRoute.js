@@ -12,12 +12,20 @@ import {
 
 const addressRouter = express.Router();
 
-addressRouter.post("/add", authRole(["user"]), addAddress);
-addressRouter.get("/view", authRole(["user"]), viewAddress);
-addressRouter.get("/getdef", authRole(["user"]), getDefaultAddress);
-addressRouter.get("/:id", authRole(["user"]), viewSingleAddress);
-addressRouter.put("/update/:id", authRole(["user"]), updateAddress);
-addressRouter.delete("/delete/:id", authRole(["user"]), deleteAddress);
-addressRouter.put("/setdef/:id", authRole(["user"]), setDefaultAddress);
+addressRouter.post("/add", authRole(["user", "seller"]), addAddress);
+addressRouter.get("/view", authRole(["user", "seller"]), viewAddress);
+addressRouter.get("/getdef", authRole(["user", "seller"]), getDefaultAddress);
+addressRouter.get("/:id", authRole(["user", "seller"]), viewSingleAddress);
+addressRouter.put("/update/:id", authRole(["user", "seller"]), updateAddress);
+addressRouter.delete(
+  "/delete/:id",
+  authRole(["user", "seller"]),
+  deleteAddress
+);
+addressRouter.put(
+  "/setdef/:id",
+  authRole(["user", "seller"]),
+  setDefaultAddress
+);
 
 export default addressRouter;

@@ -15,6 +15,12 @@ import AuthWrapper from "./components/AuthWrapper";
 import { AnimatePresence, motion } from "motion/react";
 import ProductListng from "./components/ProductListng";
 import { Toaster, toast } from "sonner";
+import Profile from "./pages/Profile";
+import ProfileForm from "./components/ProfileForm";
+import AddressForm from "./components/AddressForm";
+import Checkout from "./components/Checkout";
+import Orders from "./components/Orders";
+
 const App = () => {
   const pageVariants = {
     initial: {
@@ -37,7 +43,7 @@ const App = () => {
   const pageTransition = {
     type: "tween",
     ease: "easeInOut",
-    duration: 0.45, // Keep duration reasonable, perhaps 0.3-0.5s
+    duration: 0.45,
   };
 
   const PageWrapper = ({ children }) => {
@@ -80,6 +86,14 @@ const App = () => {
               }
             />
             <Route
+              path="results"
+              element={
+                <PageWrapper>
+                  <Products />
+                </PageWrapper>
+              }
+            />
+            <Route
               path="category/:categoryId"
               element={
                 <PageWrapper>
@@ -95,12 +109,21 @@ const App = () => {
                 </PageWrapper>
               }
             />
+
             <Route
               path="cart"
               element={
                 <PageWrapper>
                   <CartPage />
                 </PageWrapper>
+              }
+            />
+            <Route
+              path="/checkout"
+              element={
+                <ProtectedRoute allowedRoles={["user", "seller"]}>
+                  <Checkout />
+                </ProtectedRoute>
               }
             />
             <Route
@@ -135,6 +158,21 @@ const App = () => {
                   </PageWrapper>
                 }
               />
+            </Route>
+            <Route
+              path="account"
+              element={
+                <ProtectedRoute allowedRoles={["user", "seller"]}>
+                  <PageWrapper>
+                    <Profile />
+                  </PageWrapper>
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<ProfileForm />} />
+              <Route path="editprofile" element={<ProfileForm />} />
+              <Route path="editaddress" element={<AddressForm />} />
+              <Route path="orders" element={<Orders />} />
             </Route>
           </Route>
         </Routes>

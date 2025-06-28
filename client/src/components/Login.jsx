@@ -8,7 +8,7 @@ import {
 } from "../Features/User/authSlice";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { shopEaseToast } from "../utils/shopEaseToast";
+import { toast } from "sonner";
 
 const Login = ({ onClose }) => {
   const [isSignIn, setIsSignIn] = useState(true);
@@ -24,7 +24,7 @@ const Login = ({ onClose }) => {
   const { loading, error } = useSelector((state) => state.auth);
 
   if (isAuthenticated) {
-    shopEaseToast.success(`Welcome, ${user.name}`);
+    toast.success(`Welcome, ${user.name}`);
   }
 
   const isSellerPage = location.pathname.startsWith("/seller");

@@ -9,7 +9,17 @@ import {
   GET_PROFILE,
   LOGOUT_USER,
   CHECK_AUTH,
+  CHANGE_PASSWORD,
+  UPDATE_PROFILE,
 } from "../../utils/config";
+import { data } from "react-router-dom";
+import {
+  addAddress,
+  updateAddress,
+  deleteAddress,
+  setDefaultAddress,
+  getAddresses,
+} from "./addressSlice.js";
 
 // API URLs
 // const LOGIN_URL = `${BASE_URL}/api/user/login`;
@@ -136,6 +146,37 @@ export const checkAuthStatus = createAsyncThunk(
   }
 );
 
+export const changePassword = createAsyncThunk(
+  "user/changePassword",
+  async ({ currentPassword, newPassword }, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(
+        CHANGE_PASSWORD,
+        { currentPassword, newPassword },
+        { withCredentials: true }
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
+
+export const updateProfile = createAsyncThunk(
+  "user/updateProfile",
+  async (profileData, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(UPDATE_PROFILE, profileData, {
+        withCredentials: true,
+      });
+      console.log(response.data);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: "auth",
   initialState: {
@@ -230,6 +271,29 @@ const authSlice = createSlice({
         state.user = null;
         state.isAuthenticated = false;
         state.initialized = true;
+      })
+      .addCase(changePassword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(changePassword.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(changePassword.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(updateProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+      })
+      .addCase(updateProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });

@@ -1,35 +1,102 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   removeFromCart,
   updateQuantity,
   fetchCartAsync,
 } from "../Features/Cart/cartSlice.js";
-import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "motion/react";
+import {
+  placeOrderCOD, // Your COD order thunk
+  placeOnlineOrderCart, // Your thunk for online cart checkout verification
+  placeCartOrder, // Your thunk for initiating the Razorpay order on backend
+} from "../Features/Order/orderSlice.js";
+import { getAddresses } from "../Features/User/addressSlice.js";
+import axios from "axios";
+import { RAZOR_KEY } from "../utils/config.js";
+import { startRazorpayCartPayment } from "../utils/razorpayHandlerCart.js";
 
 const Cart = () => {
   const [showAddress, setShowAddress] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState("COD");
+  const [razorpayKeyId, setRazorpayKeyId] = useState(null);
+
   const dispatch = useDispatch();
-  const { cartItems, status, error } = useSelector((state) => state.cart);
   const navigate = useNavigate();
 
-  // Fetch cart on component mount
+  const {
+    cartItems,
+    status: cartStatus,
+    error: cartError,
+  } = useSelector((state) => state.cart);
+  const {
+    addresses,
+    defaultAddress,
+    loading: addressLoading,
+  } = useSelector((state) => state.address);
+  const { user } = useSelector((state) => state.auth);
+  const { loading: orderLoading, error: orderError } = useSelector(
+    (state) => state.order
+  );
+
+  // --- Initial Data Fetching ---
   useEffect(() => {
     dispatch(fetchCartAsync());
+    dispatch(getAddresses());
   }, [dispatch]);
 
-  // Calculate totals
-  const subtotal = cartItems.reduce(
+  // --- Handle Default Address Selection ---
+  useEffect(() => {
+    if (defaultAddress) {
+      setSelectedAddress(defaultAddress);
+    } else if (addresses.length > 0) {
+      setSelectedAddress(addresses[0]);
+    }
+  }, [defaultAddress, addresses]);
+
+  // --- Fetch Razorpay Key ---
+  useEffect(() => {
+    const fetchRazorpayKey = async () => {
+      try {
+        const response = await axios.get(RAZOR_KEY, {
+          withCredentials: true,
+        });
+        if (response.data?.key_id) {
+          setRazorpayKeyId(response.data.key_id);
+        } else {
+          console.error(
+            "Failed to load payment configuration: key_id missing."
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching payment configuration:", error);
+      }
+    };
+    fetchRazorpayKey();
+  }, []);
+
+  // --- Price Calculations ---
+  const subtotalAmount = cartItems.reduce(
     (total, item) =>
       total +
-      (item.product_id?.offerPrice || item.product_id?.price || 0) *
+      (parseFloat(item.product_id?.offerPrice) ||
+        parseFloat(item.product_id?.price) ||
+        0) *
         item.quantity,
     0
   );
-  const tax = Math.round(subtotal * 0.02);
-  const total = subtotal + tax;
+  const subtotalPaise = Math.round(subtotalAmount * 100);
+  const taxRate = 0.02;
+  const taxPaise = Math.round(subtotalPaise * taxRate);
+  const totalPaise = subtotalPaise + taxPaise;
 
+  const displaySubtotal = (subtotalPaise / 100).toFixed(2);
+  const displayTax = (taxPaise / 100).toFixed(2);
+  const displayTotal = (totalPaise / 100).toFixed(2);
+
+  // --- Cart Item Actions ---
   const handleQuantityChange = (itemId, newQuantity) => {
     dispatch(
       updateQuantity({ itemId: itemId, quantity: parseInt(newQuantity) })
@@ -40,19 +107,139 @@ const Cart = () => {
     dispatch(removeFromCart(itemId));
   };
 
-  if (status === "loading") {
+  // --- Place Order Logic ---
+  const handlePlaceOrder = async () => {
+    if (!selectedAddress) {
+      alert("Please select a delivery address.");
+      return;
+    }
+
+    if (cartItems.length === 0) {
+      alert("Your cart is empty. Please add items before placing an order.");
+      return;
+    }
+
+    if (paymentMethod === "ONLINE" && !razorpayKeyId) {
+      alert("Payment gateway is not ready. Please wait a moment or refresh.");
+      return;
+    }
+
+    // This array prepares items for the backend, mapping them to
+    // { product_id, quantity, seller_id } which is used internally for total calculation
+    // and for the `products` array in the `Order` model.
+    const itemsForOrder = cartItems.map((item) => ({
+      product_id: item.product_id._id, // Assumes product_id is correctly populated with the actual ID
+      quantity: item.quantity,
+      seller_id: item.product_id.seller_id, // Include seller_id as per your Order model
+    }));
+
+    let result;
+    if (paymentMethod === "COD") {
+      // --- IMPORTANT: Construct payload specifically for placeOrderCOD backend function ---
+      const orderPayloadCOD = {
+        // `placeOrderCOD` expects an `items` array where each item has a `product` field (the product ID)
+        // and `quantity`. It then fetches product details and seller_id on the backend.
+        items: itemsForOrder.map((item) => ({
+          product: item.product_id,
+          quantity: item.quantity,
+        })),
+        // `placeOrderCOD` expects the full `address` object, not just its ID.
+        address: selectedAddress,
+      };
+
+      console.log("Order Payload for COD =>", orderPayloadCOD);
+      result = await dispatch(placeOrderCOD(orderPayloadCOD)); // Dispatch the COD-specific payload
+
+      if (
+        result.meta.requestStatus === "fulfilled" &&
+        result.payload?.success
+      ) {
+        alert("Order placed successfully with Cash On Delivery!");
+        // Ensure result.payload.order?._id is available for navigation
+        navigate(`/order-success/${result.payload.order?._id || "unknown"}`);
+      } else {
+        alert(
+          "COD order failed: " +
+            (result.payload?.message || "Unknown error occurred.")
+        );
+      }
+    } else {
+      // ONLINE Payment
+      // This payload is used to initiate the Razorpay order on your backend (placeCartOrder thunk)
+      // and later for verification (originalCheckoutData).
+      const orderPayloadOnline = {
+        products: itemsForOrder, // This matches the structure expected by cartCheckout for online
+        shippingAddress: selectedAddress._id,
+        paymentType: paymentMethod,
+        amount: totalPaise, // Total amount in paise for the entire cart, calculated on frontend
+        currency: "INR",
+        // user_id will be automatically added by the backend from req.user
+      };
+
+      console.log("Order Payload for Online =>", orderPayloadOnline);
+      result = await dispatch(placeCartOrder(orderPayloadOnline)); // This initiates Razorpay order on backend
+
+      if (
+        result.meta.requestStatus === "fulfilled" &&
+        result.payload?.requiresPayment &&
+        result.payload.paymentData
+      ) {
+        startRazorpayCartPayment({
+          razorpayKeyId,
+          razorpayOrder: result.payload.paymentData,
+          product: { name: "Your Shopping Cart Order" },
+          user,
+          selectedAddress,
+          originalCheckoutData: orderPayloadOnline, // Pass the full online order payload
+          dispatch,
+          placeOnlineOrderThunk: placeOnlineOrderCart,
+          navigate,
+        });
+      } else if (
+        result.meta.requestStatus === "fulfilled" &&
+        result.payload?.order?._id
+      ) {
+        alert("Order placed successfully (no payment required).");
+        navigate(`/order-success/${result.payload.order._id}`);
+      } else {
+        alert(
+          "Online order initiation failed: " +
+            (result.payload?.message || "Unknown error occurred.")
+        );
+      }
+    }
+  };
+
+  // --- Loading States ---
+  if (
+    cartStatus === "loading" ||
+    addressLoading ||
+    orderLoading ||
+    (paymentMethod === "ONLINE" && razorpayKeyId === null)
+  ) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
-        <div className="text-lg">Loading cart...</div>
+        <div className="text-lg">Loading cart and checkout information...</div>
       </div>
     );
   }
 
-  if (status === "failed") {
+  // --- Error States ---
+  if (cartStatus === "failed") {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
-        <div className="font-montserrat  text-lg text-red-500">
-          Please Login to View Your Cart
+        <div className="font-montserrat text-lg text-red-500">
+          Error loading cart: {cartError}. Please Login to View Your Cart.
+        </div>
+      </div>
+    );
+  }
+
+  if (orderError) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="font-montserrat text-lg text-red-500">
+          Order Processing Error: {orderError}
         </div>
       </div>
     );
@@ -71,8 +258,10 @@ const Cart = () => {
         {cartItems.length === 0 ? (
           <div className="text-center py-10">
             <p className="text-lg">Your cart is empty</p>
-
-            <button className="mt-4 !text-[var(--primary)] hover:underline">
+            <button
+              className="mt-4 !text-[var(--primary)] hover:underline"
+              onClick={() => navigate("/")}
+            >
               Continue Shopping
             </button>
           </div>
@@ -85,9 +274,8 @@ const Cart = () => {
             </div>
 
             {cartItems.map((item) => (
-              <AnimatePresence>
+              <AnimatePresence key={item._id}>
                 <motion.div
-                  key={item._id}
                   initial={{ opacity: 1, height: "auto" }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{
@@ -98,7 +286,7 @@ const Cart = () => {
                     transition: { duration: 0.3, ease: "easeOut" },
                   }}
                   transition={{ duration: 0.3, ease: "easeIn" }}
-                  className="grid grid-cols-[2fr_1fr_1fr] text-gray-500 items-center text-sm md:text-base font-medium pt-3  pb-3"
+                  className="grid grid-cols-[2fr_1fr_1fr] text-gray-500 items-center text-sm md:text-base font-medium pt-3 pb-3"
                 >
                   <div className="flex items-center md:gap-6 gap-3">
                     <div className="cursor-pointer w-24 h-24 flex items-center justify-center border border-gray-300 rounded overflow-hidden">
@@ -110,19 +298,22 @@ const Cart = () => {
                           alt={item.product_id.name || "Product"}
                           onError={(e) => {
                             e.target.style.display = "none";
-                            e.target.nextSibling.style.display = "block";
+                            if (e.target.nextSibling) {
+                              e.target.nextSibling.style.display = "block";
+                            }
                           }}
                         />
                       ) : null}
-
                       <div
                         className="text-gray-400 text-sm text-center p-2"
                         style={{
                           display:
-                            item.product_id?.images?.length > 0 &&
-                            item.product_id.images[0]
-                              ? "none"
-                              : "block",
+                            !item.product_id?.images ||
+                            item.product_id.images.length === 0 ||
+                            (item.product_id.images.length > 0 &&
+                              !item.product_id.images[0])
+                              ? "block"
+                              : "none",
                         }}
                       >
                         No Image Available
@@ -145,7 +336,7 @@ const Cart = () => {
                             }
                             className="outline-none border border-gray-300 rounded px-2 py-1"
                           >
-                            {Array(10) // Allow quantities up to 10
+                            {Array(10)
                               .fill("")
                               .map((_, i) => (
                                 <option key={i} value={i + 1}>
@@ -156,18 +347,22 @@ const Cart = () => {
                         </div>
                         <p className="text-sm">
                           Price: $
-                          {item.product_id?.offerPrice ||
+                          {(
+                            item.product_id?.offerPrice ||
                             item.product_id?.price ||
-                            0}
+                            0
+                          ).toFixed(2)}
                         </p>
                       </div>
                     </div>
                   </div>
                   <p className="text-center font-semibold">
                     $
-                    {(item.product_id?.offerPrice ||
-                      item.product_id?.price ||
-                      0) * item.quantity}
+                    {(
+                      (item.product_id?.offerPrice ||
+                        item.product_id?.price ||
+                        0) * item.quantity
+                    ).toFixed(2)}
                   </p>
                   <div className="flex justify-center">
                     <button
@@ -220,14 +415,18 @@ const Cart = () => {
       </div>
 
       {cartItems.length > 0 && (
-        <div className="max-w-[360px] h-[550px] w-full bg-gray-100/40 p-7 max-md:mt-16 border border-gray-300/70 rounded sticky top-[130px]">
+        <div className="max-w-[360px] h-fit w-full bg-gray-100/40 p-7 max-md:mt-16 border border-gray-300/70 rounded sticky top-[130px]">
           <h2 className="text-xl font-medium">Order Summary</h2>
           <hr className="border-gray-300 my-5" />
 
           <div className="mb-6">
             <p className="text-sm font-medium uppercase">Delivery Address</p>
             <div className="relative flex justify-between items-start mt-2">
-              <p className="text-gray-500">No address found</p>{" "}
+              <p className="text-gray-500">
+                {selectedAddress
+                  ? `${selectedAddress.addressLine1}, ${selectedAddress.city}`
+                  : "No address selected"}
+              </p>
               <button
                 onClick={() => setShowAddress(!showAddress)}
                 className="text-[var(--primary)] hover:underline cursor-pointer"
@@ -236,19 +435,21 @@ const Cart = () => {
               </button>
               {showAddress && (
                 <div className="absolute top-8 py-1 bg-white border border-gray-300 text-sm w-full z-10">
-                  {" "}
+                  {addresses.map((addr) => (
+                    <p
+                      key={addr._id}
+                      onClick={() => {
+                        setSelectedAddress(addr);
+                        setShowAddress(false);
+                      }}
+                      className="text-gray-500 p-2 hover:bg-gray-100 cursor-pointer"
+                    >
+                      {addr.addressLine1}, {addr.city}
+                    </p>
+                  ))}
                   <p
                     onClick={() => {
-                      //
-                      setShowAddress(false);
-                    }}
-                    className="text-gray-500 p-2 hover:bg-gray-100 cursor-pointer"
-                  >
-                    New York, USA
-                  </p>
-                  <p
-                    onClick={() => {
-                      //
+                      navigate("/account/editaddress");
                       setShowAddress(false);
                     }}
                     className="text-indigo-500 text-center cursor-pointer p-2 hover:bg-indigo-500/10"
@@ -260,9 +461,13 @@ const Cart = () => {
             </div>
 
             <p className="text-sm font-medium uppercase mt-6">Payment Method</p>
-            <select className="w-full border border-gray-300 bg-white px-3 py-2 mt-2 outline-none">
+            <select
+              className="w-full border border-gray-300 bg-white px-3 py-2 mt-2 outline-none"
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+            >
               <option value="COD">Cash On Delivery</option>
-              <option value="Online">Online Payment</option>
+              <option value="ONLINE">Online Payment</option>
             </select>
           </div>
 
@@ -271,8 +476,7 @@ const Cart = () => {
           <div className="text-gray-500 mt-4 space-y-2">
             <p className="flex justify-between">
               <span>Price</span>
-              <span>${subtotal.toFixed(2)}</span>{" "}
-              {/* Format to 2 decimal places */}
+              <span>${displaySubtotal}</span>
             </p>
             <p className="flex justify-between">
               <span>Shipping Fee</span>
@@ -280,20 +484,27 @@ const Cart = () => {
             </p>
             <p className="flex justify-between">
               <span>Tax (2%)</span>
-              <span>${tax.toFixed(2)}</span> {/* Format to 2 decimal places */}
+              <span>${displayTax}</span>
             </p>
-            <hr className="border-gray-300 my-3" />{" "}
-            {/* Added missing hr based on original code flow */}
+            <hr className="border-gray-300 my-3" />
             <p className="flex justify-between text-lg font-medium text-gray-800">
               <span>Total Amount:</span>
-              <span>${total.toFixed(2)}</span>{" "}
-              {/* Format to 2 decimal places */}
+              <span>${displayTotal}</span>
             </p>
           </div>
 
-          <button className="w-full py-3 mt-6 bg-[var(--primary)] text-white font-medium hover:bg-[var(--primary-dark)] active:scale-95 transition duration-300 rounded">
-            Place Order (${total.toFixed(2)}) {/* Format to 2 decimal places */}
+          <button
+            onClick={handlePlaceOrder}
+            disabled={orderLoading || cartItems.length === 0}
+            className="w-full py-3 mt-6 bg-[var(--primary)] text-white font-medium hover:bg-[var(--primary-dark)] active:scale-95 transition duration-300 rounded disabled:bg-gray-400"
+          >
+            {orderLoading
+              ? "Placing Order..."
+              : `Place Order ($${displayTotal})`}
           </button>
+          {orderError && (
+            <p className="text-red-500 text-sm mt-2">{orderError}</p>
+          )}
         </div>
       )}
     </div>

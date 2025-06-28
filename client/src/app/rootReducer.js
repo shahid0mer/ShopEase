@@ -5,6 +5,10 @@ import authReducer from "../Features/User/authSlice";
 import productReducer from "../Features/Product/productSlice";
 import categoryReducer from "../Features/Product/categorySlice";
 import cartReducer from "../Features/Cart/cartSlice";
+import addressReducer from "../Features/User/addressSlice";
+import reviewReducer from "../Features/Reviews/reviewSlice";
+import orderReducer from "../Features/Order/orderSlice";
+import carousalreducer from "../Features/Carousal/carousalSlice";
 
 // Auth persist config
 const authPersistConfig = {
@@ -19,6 +23,10 @@ const combinedReducer = combineReducers({
   product: productReducer,
   category: categoryReducer,
   cart: cartReducer,
+  address: addressReducer,
+  reviews: reviewReducer,
+  order: orderReducer,
+  carousel: carousalreducer,
 });
 
 // Root persist config
@@ -26,8 +34,7 @@ const rootPersistConfig = {
   key: "root",
   version: 1,
   storage,
-  //   blacklist: ["auth"], // We already persist auth separately
+  blacklist: ["product"],
 };
 
-// Export persisted reducer
 export const rootReducer = persistReducer(rootPersistConfig, combinedReducer);

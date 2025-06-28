@@ -6,6 +6,7 @@ import {
   userLogout,
   viewProfile,
   updateProfile,
+  changePassword,
 } from "../controllers/userController.js";
 
 import { upgradeToSeller } from "../controllers/sellerController.js";
@@ -21,5 +22,9 @@ userRouter.get("/logout", authRole(["user", "seller"]), userLogout);
 userRouter.get("/profile", authRole(["user", "seller"]), viewProfile);
 userRouter.put("/updateprofile", authRole(["user", "seller"]), updateProfile);
 userRouter.put("/upgraderole", authRole(["user", "seller"]), upgradeToSeller);
-
+userRouter.put(
+  "/change-password",
+  authRole(["user", "seller"]),
+  changePassword
+);
 export default userRouter;

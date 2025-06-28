@@ -11,7 +11,7 @@ const authRole = (allowedRoles = []) => {
         .status(401)
         .json({ success: false, message: "No token. Not authorized" });
     }
-
+    console.log(" Token from cookies:", token);
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       console.log("🧾 Decoded JWT:", decoded);
@@ -37,6 +37,7 @@ const authRole = (allowedRoles = []) => {
       next();
     } catch (error) {
       console.log("Error in authRole:", error.message);
+      console.log(" Token from cookies:", token);
       res.status(401).json({ success: false, message: error.message });
     }
   };

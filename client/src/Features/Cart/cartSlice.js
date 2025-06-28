@@ -90,7 +90,7 @@ export const updateQuantity = createAsyncThunk(
   async ({ itemId, quantity }, thunkAPI) => {
     try {
       const { data } = await axios.put(
-        `${BASE_URL}/cart/update/${itemId}`,
+        `${BASE_URL}/api/cart/update/${itemId}`,
         { quantity },
         { withCredentials: true }
       );

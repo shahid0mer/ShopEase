@@ -24,6 +24,7 @@ const productSchema = new mongoose.Schema(
 );
 
 productSchema.index({ category_id: 1 });
+productSchema.index({ name: "text", description: "text", brand: "text" });
 
 const Product =
   mongoose.models.Product || mongoose.model("Product", productSchema);

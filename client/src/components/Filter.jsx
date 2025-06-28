@@ -1,13 +1,20 @@
+// Filter.jsx
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchPaginatedProductsByCategory } from "../Features/Product/productSlice.js";
-import { useParams } from "react-router-dom";
+import { fetchProductsWithFilters } from "../Features/Product/productSlice.js";
+import { useParams, useSearchParams } from "react-router-dom";
 
-const Filter = () => {
+const Filter = ({ sort = null, keyword = "" }) => {
   const dispatch = useDispatch();
   const { filters } = useSelector((state) => state.product);
   const { categoryId } = useParams();
+  const [searchParams] = useSearchParams();
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+  // Get current URL parameters
+  const urlKeyword = searchParams.get("keyword") || keyword;
+  const urlSort = searchParams.get("sort") || sort;
+  const urlPage = parseInt(searchParams.get("page")) || 1;
 
   const [activeFilters, setActiveFilters] = useState({
     categories: [],
@@ -100,35 +107,56 @@ const Filter = () => {
       brands: [],
       ratings: null,
     });
+
+    // Clear filters but preserve keyword and other URL params
     dispatch(
-      fetchPaginatedProductsByCategory({
-        categoryId,
-        filters: {},
+      fetchProductsWithFilters({
+        category: categoryId || "",
+        keyword: urlKeyword,
+        page: 1,
+        limit: 20,
+        sort: urlSort,
       })
     );
   };
 
   const applyFilters = () => {
+    const effectiveCategoryId = categoryId || "";
+
     dispatch(
-      fetchPaginatedProductsByCategory({
-        categoryId,
-        filters: {
-          minPrice: activeFilters.priceRange.min,
-          maxPrice: activeFilters.priceRange.max,
-          brands: activeFilters.brands,
-          categories: activeFilters.categories,
-        },
+      fetchProductsWithFilters({
+        category: effectiveCategoryId,
+        keyword: urlKeyword, // Use URL keyword to maintain search
+        page: 1,
+        limit: 20,
+        minPrice: activeFilters.priceRange.min,
+        maxPrice: activeFilters.priceRange.max,
+        brands: activeFilters.brands,
+        rating: activeFilters.ratings,
+        sort: urlSort,
       })
     );
-    setIsMobileFilterOpen(false); // Close filter on apply in mobile
+    setIsMobileFilterOpen(false);
   };
 
+  // Apply filters when price range changes (with debounce)
   useEffect(() => {
     const timer = setTimeout(() => {
       applyFilters();
     }, 500);
     return () => clearTimeout(timer);
   }, [activeFilters.priceRange]);
+
+  // Apply filters when other filters change
+  useEffect(() => {
+    if (
+      activeFilters.categories.length > 0 ||
+      activeFilters.brands.length > 0 ||
+      activeFilters.ratings !== null
+    ) {
+      applyFilters();
+    }
+  }, [activeFilters.categories, activeFilters.brands, activeFilters.ratings]);
 
   return (
     <>
@@ -195,6 +223,15 @@ const Filter = () => {
             </button>
           </div>
         </div>
+
+        {/* Show current search keyword if exists */}
+        {urlKeyword && (
+          <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+            <p className="text-sm text-blue-700">
+              <span className="font-medium">Searching for:</span> "{urlKeyword}"
+            </p>
+          </div>
+        )}
 
         <div className="space-y-8 h-[calc(100%-180px)] overflow-y-auto pb-4">
           {/* Price Range */}

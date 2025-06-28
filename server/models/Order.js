@@ -4,10 +4,11 @@ const orderSchema = new mongoose.Schema(
   {
     user_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "user",
+      ref: "User",
       required: true,
       index: true,
     },
+
     products: [
       {
         product_id: {
@@ -23,21 +24,51 @@ const orderSchema = new mongoose.Schema(
         },
       },
     ],
-    paymentType: { type: String, required: true },
-    amount: { type: Number, required: true },
-    status: { type: String, default: "Order placed" },
+
+    paymentType: {
+      type: String,
+      required: true,
+      enum: ["COD", "ONLINE"],
+    },
+
+    amount: {
+      type: Number,
+      required: true,
+    },
+
+    status: {
+      type: String,
+      enum: [
+        "Pending",
+        "Order placed",
+        "Completed",
+        "Shipped",
+        "Delivered",
+        "Cancelled",
+      ],
+      default: "Order placed",
+    },
     cancelledAt: { type: Date },
-    payment_id: { type: mongoose.Schema.Types.ObjectId, ref: "Payment" },
+
+    payment_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Payment",
+    },
+
     shippingAddress: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Address",
       required: true,
     },
-    ispaid: { type: Boolean, default: false },
+
+    isPaid: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
 
-const Order = mongoose.models.order || mongoose.model("Order", orderSchema);
+const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
 
 export default Order;

@@ -64,7 +64,7 @@ export const getSellerProducts = createAsyncThunk(
           withCredentials: true,
         }
       );
-      console.log("📦 API response", response.data);
+
       return response.data.products;
     } catch (error) {
       console.error(
@@ -99,27 +99,38 @@ export const updateProductStock = createAsyncThunk(
   }
 );
 
-export const fetchPaginatedProductsByCategory = createAsyncThunk(
-  "product/fetchPaginatedByCategory",
-  async ({ categoryId, page = 1, limit = 20, filters = {} }, thunkAPI) => {
+export const fetchProductsWithFilters = createAsyncThunk(
+  "product/fetchProductsWithFilters",
+  async (params, { rejectWithValue }) => {
     try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
-      });
+      const queryParams = new URLSearchParams();
 
-      if (filters.minPrice) params.append("minPrice", filters.minPrice);
-      if (filters.maxPrice) params.append("maxPrice", filters.maxPrice);
+      Object.entries(params).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach((v) => queryParams.append(key, v));
+        } else if (
+          value !== undefined &&
+          value !== null &&
+          value !== "" &&
+          !(typeof value === "string" && value.toLowerCase() === "null")
+        ) {
+          const paramKey = key === "category" ? "categoryId" : key;
+          queryParams.append(paramKey, value);
+        }
+      });
+      console.log("Final query string:", queryParams.toString());
 
       const response = await axios.get(
-        `${BASE_URL}/api/product/category/${categoryId}/paginated?${params.toString()}`,
-        { withCredentials: true }
+        `${BASE_URL}/api/product/list?${queryParams.toString()}`,
+        {
+          withCredentials: true,
+        }
       );
+
       return response.data;
     } catch (error) {
-      console.error("API Error:", error);
-      return thunkAPI.rejectWithValue(
-        error.response?.data?.message || error.message
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch products"
       );
     }
   }
@@ -129,7 +140,7 @@ const productSlice = createSlice({
   name: "product",
   initialState: {
     products: [],
-    categoryProducts: [],
+    filteredProducts: [],
     loading: false,
     error: null,
     successMessage: "",
@@ -210,23 +221,24 @@ const productSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      .addCase(fetchPaginatedProductsByCategory.pending, (state) => {
+      .addCase(fetchProductsWithFilters.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchPaginatedProductsByCategory.fulfilled, (state, action) => {
+      .addCase(fetchProductsWithFilters.fulfilled, (state, action) => {
         state.loading = false;
-        state.categoryProducts = action.payload.products;
+        state.filteredProducts = action.payload.products;
         state.currentPage = action.payload.page;
         state.totalPages = action.payload.pages;
         state.totalProducts = action.payload.total;
       })
-      .addCase(fetchPaginatedProductsByCategory.rejected, (state, action) => {
+      .addCase(fetchProductsWithFilters.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message || action.error.message;
+        state.error = action.payload;
       });
   },
 });
 
 export const { clearMessages } = productSlice.actions;
+
 export default productSlice.reducer;

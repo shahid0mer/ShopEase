@@ -9,18 +9,18 @@ import {
   productView,
   updatefullProduct,
 } from "../controllers/productController.js";
-import { getPaginatedProductsWithFilter } from "../controllers/categoryController.js";
+import { getFilteredOrSearchedProducts } from "../controllers/categoryController.js";
 
 const productRouter = express.Router();
 
+productRouter.get("/list", getFilteredOrSearchedProducts);
+productRouter.get("/viewall", getAllProducts);
 productRouter.post(
   "/add",
   uploadMemory.array("image"),
   authRole(["seller"]),
   addProduct
 );
-productRouter.get("/viewall", getAllProducts);
-productRouter.get("/:id", productView);
 productRouter.put("/update/:id", authRole(["seller"]), changeStock);
 productRouter.put(
   "/updateproduct/:id",
@@ -29,9 +29,6 @@ productRouter.put(
   updatefullProduct
 );
 
-productRouter.get(
-  "/category/:categoryId/paginated",
-  getPaginatedProductsWithFilter
-);
+productRouter.get("/:id", productView);
 
 export default productRouter;

@@ -1,14 +1,22 @@
 import React, { useState } from "react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 
-const SortBy = () => {
+const SortBy = ({ onSortChange }) => {
   const [isPriceDropdownOpen, setIsPriceDropdownOpen] = useState(false);
   const [isDiscountDropdownOpen, setIsDiscountDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const handleSort = (value) => {
+    onSortChange(value);
+    // Close all dropdowns after selection
+    setIsPriceDropdownOpen(false);
+    setIsDiscountDropdownOpen(false);
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <>
-      {/* Mobile Toggle Button (hidden on desktop) */}
+      {/* Mobile Toggle Button */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         className="lg:hidden bg-white p-4 border border-gray-200 shadow-sm mt-14 w-full flex justify-between items-center"
@@ -21,19 +29,16 @@ const SortBy = () => {
         )}
       </button>
 
-      {/* Desktop Version (unchanged) */}
+      {/* Desktop */}
       <div className="hidden lg:block bg-white p-4 border border-gray-200 shadow-sm mt-14 mx-auto">
         <div className="flex items-center space-x-6 text-gray-700">
-          <button className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors duration-200">
-            Sort By
-          </button>
-          <button className="text-sm font-medium hover:text-emerald-600 transition-colors duration-200">
-            Popularity
-          </button>
           <div className="relative">
             <button
-              onClick={() => setIsPriceDropdownOpen(!isPriceDropdownOpen)}
-              className="flex items-center text-sm font-medium hover:text-emerald-600 focus:outline-none transition-colors duration-200"
+              onClick={() => {
+                setIsPriceDropdownOpen(!isPriceDropdownOpen);
+                setIsDiscountDropdownOpen(false); // Close other dropdown
+              }}
+              className="flex items-center text-sm font-medium hover:text-emerald-600"
             >
               Price
               {isPriceDropdownOpen ? (
@@ -43,23 +48,29 @@ const SortBy = () => {
               )}
             </button>
             {isPriceDropdownOpen && (
-              <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
-                <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+              <div className="absolute top-full left-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-10">
+                <button
+                  onClick={() => handleSort("price_asc")}
+                  className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                >
                   Price: Low to High
                 </button>
-                <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                <button
+                  onClick={() => handleSort("price_desc")}
+                  className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                >
                   Price: High to Low
                 </button>
               </div>
             )}
           </div>
-          <button className="text-sm font-medium hover:text-emerald-600 transition-colors duration-200">
-            New Arrivals
-          </button>
           <div className="relative">
             <button
-              onClick={() => setIsDiscountDropdownOpen(!isDiscountDropdownOpen)}
-              className="flex items-center text-sm font-medium hover:text-emerald-600 focus:outline-none transition-colors duration-200"
+              onClick={() => {
+                setIsDiscountDropdownOpen(!isDiscountDropdownOpen);
+                setIsPriceDropdownOpen(false); // Close other dropdown
+              }}
+              className="flex items-center text-sm font-medium hover:text-emerald-600"
             >
               Discount
               {isDiscountDropdownOpen ? (
@@ -69,11 +80,17 @@ const SortBy = () => {
               )}
             </button>
             {isDiscountDropdownOpen && (
-              <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
-                <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+              <div className="absolute top-full left-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-10">
+                <button
+                  onClick={() => handleSort("highestDiscount")}
+                  className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                >
                   Highest Discount
                 </button>
-                <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                <button
+                  onClick={() => handleSort("lowestDiscount")}
+                  className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                >
                   Lowest Discount
                 </button>
               </div>
@@ -82,20 +99,17 @@ const SortBy = () => {
         </div>
       </div>
 
-      {/* Mobile Menu (shown when toggled) */}
+      {/* Mobile */}
       {isMobileMenuOpen && (
         <div className="lg:hidden bg-white border border-gray-200 shadow-sm">
           <div className="flex flex-col space-y-4 p-4 text-gray-700">
-            <button className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50">
-              Sort By
-            </button>
-            <button className="text-left text-sm font-medium hover:text-emerald-600 py-2">
-              Popularity
-            </button>
             <div className="relative">
               <button
-                onClick={() => setIsPriceDropdownOpen(!isPriceDropdownOpen)}
-                className="flex items-center justify-between w-full text-sm font-medium hover:text-emerald-600 py-2"
+                onClick={() => {
+                  setIsPriceDropdownOpen(!isPriceDropdownOpen);
+                  setIsDiscountDropdownOpen(false); // Close other dropdown
+                }}
+                className="flex justify-between w-full text-sm font-medium hover:text-emerald-600"
               >
                 Price
                 {isPriceDropdownOpen ? (
@@ -106,22 +120,28 @@ const SortBy = () => {
               </button>
               {isPriceDropdownOpen && (
                 <div className="pl-4 mt-2 space-y-2">
-                  <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">
+                  <button
+                    onClick={() => handleSort("price_asc")}
+                    className="block w-full text-left text-sm hover:bg-gray-100 p-2 rounded"
+                  >
                     Price: Low to High
                   </button>
-                  <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">
+                  <button
+                    onClick={() => handleSort("price_desc")}
+                    className="block w-full text-left text-sm hover:bg-gray-100 p-2 rounded"
+                  >
                     Price: High to Low
                   </button>
                 </div>
               )}
             </div>
-            <button className="text-left text-sm font-medium hover:text-emerald-600 py-2">
-              New Arrivals
-            </button>
             <div className="relative">
               <button
-                onClick={() => setIsDiscountDropdownOpen(!isDiscountDropdownOpen)}
-                className="flex items-center justify-between w-full text-sm font-medium hover:text-emerald-600 py-2"
+                onClick={() => {
+                  setIsDiscountDropdownOpen(!isDiscountDropdownOpen);
+                  setIsPriceDropdownOpen(false); // Close other dropdown
+                }}
+                className="flex justify-between w-full text-sm font-medium hover:text-emerald-600"
               >
                 Discount
                 {isDiscountDropdownOpen ? (
@@ -132,10 +152,16 @@ const SortBy = () => {
               </button>
               {isDiscountDropdownOpen && (
                 <div className="pl-4 mt-2 space-y-2">
-                  <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">
+                  <button
+                    onClick={() => handleSort("highestDiscount")}
+                    className="block w-full text-left text-sm hover:bg-gray-100 p-2 rounded"
+                  >
                     Highest Discount
                   </button>
-                  <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">
+                  <button
+                    onClick={() => handleSort("lowestDiscount")}
+                    className="block w-full text-left text-sm hover:bg-gray-100 p-2 rounded"
+                  >
                     Lowest Discount
                   </button>
                 </div>

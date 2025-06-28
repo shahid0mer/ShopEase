@@ -32,7 +32,8 @@
     "p-limit": "^6.2.0",
     "razorpay": "^2.9.6",
     "sharp": "^0.34.2",
-    "streamifier": "^0.1.1"
+    "streamifier": "^0.1.1",
+    "stripe": "^18.2.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
