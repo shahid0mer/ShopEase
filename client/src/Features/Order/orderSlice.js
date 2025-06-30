@@ -138,7 +138,7 @@ export const placeOrderCOD = createAsyncThunk(
   async ({ items, address }, thunkAPI) => {
     try {
       const response = await axios.post(
-        ORDER_COD, 
+        ORDER_COD,
         { items, address },
         {
           withCredentials: true,
@@ -268,6 +268,21 @@ export const placeOnlineOrderCart = createAsyncThunk(
   }
 );
 
+export const cancelOrderById = createAsyncThunk(
+  "order/cancelOrderById",
+  async (orderId, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(
+        `${BASE_URL}/api/order/cancel/${orderId}`,
+        {},
+        { withCredentials: true }
+      );
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || err.message);
+    }
+  }
+);
 const orderSlice = createSlice({
   name: "order",
   initialState: {

@@ -5,7 +5,12 @@ import "react-loading-skeleton/dist/skeleton.css";
 
 const ProductSkeletonCard = () => {
   return (
-    <div className="bg-white p-4 rounded-xl shadow-md space-y-3">
+    <div
+      className="bg-white p-4 rounded-xl shadow-md space-y-3
+                    dark:bg-neutral-800 dark:shadow-neutral-900/30"
+    >
+      {" "}
+      {/* Added dark mode classes */}
       <Skeleton height={200} borderRadius={12} />
       <Skeleton height={20} width={`80%`} />
       <Skeleton height={15} width={`60%`} />

@@ -24,3 +24,5 @@ export const RAZOR_KEY = `${BASE_URL}/api/key/razorkey`;
 export const CART_CHECKOUT = `${BASE_URL}/api/order/createcart`;
 export const VER_CART = `${BASE_URL}/api/order/verifycart`;
 export const GET_CAROUSAL = `${BASE_URL}/api/carousal/get`;
+export const ADMIN_LOGIN = `${BASE_URL}/api/admin/login`;
+export const ADMIN_LOGOUT = `${BASE_URL}/api/admin/logout`;

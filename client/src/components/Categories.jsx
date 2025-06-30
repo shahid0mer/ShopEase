@@ -52,7 +52,8 @@ const Categories = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-8">
-      <h2 className="text-2xl font-bold text-[var(--neutral-700)] mb-8">
+      {/* Text color for "Popular Categories" */}
+      <h2 className="text-2xl font-bold text-[var(--neutral-700)] dark:text-[var(--neutral-700)] mb-8 ">
         Popular Categories
       </h2>
 
@@ -61,10 +62,20 @@ const Categories = () => {
           <button
             key={category.id}
             onClick={() => handleCategoryClick(category.id)}
-            className="flex flex-col items-center p-4 hover:translate-y-[-8px] active:scale-110 duration-400 hover:text-[var(--primary)] border-0 sm:border-[1px] border-[var(--neutral-200)] hover:border-[var(--primary)] w-full h-[130px] transition-all"
+            className="
+              flex flex-col items-center p-4
+              hover:translate-y-[-8px] active:scale-110 duration-400
+              hover:text-[var(--primary)]
+              border-0 sm:border-[1px]
+              border-[var(--neutral-200)] 
+              hover:border-[var(--primary)] dark:hover:border-[var(--primary-light)]
+              w-full h-[130px] transition-all
+              bg-[var(--neutral-50)] 
+              text-[var(--neutral-700)] dark:text-[var(--neutral-500)] dark:bg-neutral-800
+            "
           >
             <img
-              className="object-contain rounded-sm w-16 h-16 mb-2"
+              className="object-contain rounded-sm w-16 h-16 mb-2 "
               src={category.icon}
               alt={category.name}
             />

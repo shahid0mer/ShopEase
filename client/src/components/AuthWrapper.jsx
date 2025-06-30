@@ -12,11 +12,10 @@ const AuthWrapper = ({ children }) => {
   );
 
   useEffect(() => {
-    // Dispatch checkAuthStatus and getUserProfile only once when the component mounts
     if (!initialized) {
       console.log("Dispatching checkAuthStatus and getUserProfile...");
       dispatch(checkAuthStatus());
-      dispatch(getUserProfile()); // Fetch profile after auth status is checked or along with it.
+      dispatch(getUserProfile());
     }
   }, [dispatch, initialized]);
 
@@ -27,7 +26,6 @@ const AuthWrapper = ({ children }) => {
       );
       dispatch(fetchCartAsync(user._id));
     }
-    // No else if needed here, if not authenticated, cart will remain empty 
   }, [dispatch, initialized, isAuthenticated, user?._id]);
 
   // Optionally, you can show a loading spinner or null while authentication is being checked

@@ -1,5 +1,4 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "sonner";
 
@@ -48,7 +47,6 @@ const AddressForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Enhanced validation
     const requiredFields = {
       name: "Full Name",
       phone: "Mobile Number",
@@ -67,7 +65,6 @@ const AddressForm = () => {
       return;
     }
 
-    // Validate phone number format
     if (!/^\d{10}$/.test(address.phone)) {
       toast.error("Please enter a valid 10-digit phone number");
       return;
@@ -84,8 +81,6 @@ const AddressForm = () => {
         country: address.country,
         isDefault: address.isDefault,
       };
-
-      console.log("sending", addressData);
 
       if (editingAddress) {
         await dispatch(
@@ -156,50 +151,78 @@ const AddressForm = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-6">Your Addresses</h2>
-      {loading && !addresses && <p>Loading addresses...</p>}
+    <div
+      className="w-full max-w-4xl mx-auto p-2 sm:p-4 lg:p-6
+                 dark:bg-[var(--neutral-50)] dark:text-[var(--neutral-700)]"
+    >
+      <h2
+        className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 px-2 sm:px-0
+                   dark:text-[var(--neutral-700)]"
+      >
+        Your Addresses
+      </h2>
+      {loading && !addresses && (
+        <p className="dark:text-[var(--neutral-500)] px-2 sm:px-0">
+          Loading addresses...
+        </p>
+      )}
+
       {/* Address List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8 px-2 sm:px-0">
         {addresses?.map((addr) => (
           <div
             key={addr._id}
-            className={`border rounded-lg p-4 relative ${
-              addr.isDefault
-                ? "border-green-500 bg-green-50"
-                : "border-gray-200"
-            }`}
+            className={`border rounded-lg p-3 sm:p-4 relative
+                       ${
+                         addr.isDefault
+                           ? "border-green-500 bg-green-50 dark:border-[var(--primary-dark)] dark:bg-[var(--primary-light)]"
+                           : "border-gray-200 dark:border-[var(--neutral-200)] dark:bg-[var(--neutral-50)]"
+                       }`}
           >
             {addr.isDefault && (
-              <span className="absolute top-2 right-2 bg-[var(--primary)] text-white text-xs px-2 py-1 rounded">
+              <span
+                className="absolute top-2 right-2 bg-[var(--primary)] text-white text-xs px-2 py-1 rounded
+                         dark:bg-[var(--primary-dark)]"
+              >
                 Default
               </span>
             )}
-            <h3 className="font-medium">{addr.name}</h3>
-            <p>{addr.addressLine1}</p>
-            <p>
+            <h3 className="font-medium text-sm sm:text-base pr-16 dark:text-[var(--neutral-700)]">
+              {addr.name}
+            </h3>
+            <p className="text-sm dark:text-[var(--neutral-500)] mt-1">
+              {addr.addressLine1}
+            </p>
+            <p className="text-sm dark:text-[var(--neutral-500)]">
               {addr.city}, {addr.state} {addr.pincode}
             </p>
-            <p>{addr.country}</p>
-            <p className="mt-2">Phone: {addr.phone}</p>
+            <p className="text-sm dark:text-[var(--neutral-500)]">
+              {addr.country}
+            </p>
+            <p className="mt-2 text-sm dark:text-[var(--neutral-500)]">
+              Phone: {addr.phone}
+            </p>
 
-            <div className="mt-4 flex space-x-2">
+            <div className="mt-3 sm:mt-4 flex flex-wrap gap-2 sm:gap-3">
               <button
                 onClick={() => handleEdit(addr)}
-                className="text-blue-600 hover:underline text-sm"
+                className="text-blue-600 hover:underline text-xs sm:text-sm
+                           dark:text-blue-400 dark:hover:text-blue-300"
               >
                 Edit
               </button>
               <button
                 onClick={() => handleDelete(addr._id)}
-                className="text-red-600 hover:underline text-sm"
+                className="text-red-600 hover:underline text-xs sm:text-sm
+                           dark:text-red-400 dark:hover:text-red-300"
               >
                 Delete
               </button>
               {!addr.isDefault && (
                 <button
                   onClick={() => handleSetDefault(addr._id)}
-                  className="text-green-600 hover:underline text-sm"
+                  className="text-green-600 hover:underline text-xs sm:text-sm
+                             dark:text-green-400 dark:hover:text-green-300"
                 >
                   Set as Default
                 </button>
@@ -210,23 +233,35 @@ const AddressForm = () => {
       </div>
 
       {/* Add/Edit Address Form */}
-      <button
-        onClick={() => setShowForm(true)}
-        className="bg-[var(--primary)] text-white px-4 py-2 rounded hover:bg-[var(--primary-dark)] mb-6"
-      >
-        {addresses?.length ? "+ Add New Address" : "+ Add Your First Address"}
-      </button>
+      <div className="px-2 sm:px-0">
+        <button
+          onClick={() => setShowForm(true)}
+          className="w-full sm:w-auto bg-[var(--primary)] text-white px-4 py-2 sm:py-3 rounded text-sm sm:text-base hover:bg-[var(--primary-dark)] mb-4 sm:mb-6
+                     dark:bg-[var(--primary-dark)] dark:hover:bg-[var(--primary)]"
+        >
+          {addresses?.length ? "+ Add New Address" : "+ Add Your First Address"}
+        </button>
+      </div>
 
       {showForm && (
-        <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-          <h3 className="text-lg font-medium mb-4">
+        <div
+          className="bg-white p-3 sm:p-6 rounded-lg shadow-md border border-gray-200 mx-2 sm:mx-0
+                     dark:bg-[var(--neutral-50)] dark:shadow-lg dark:border-[var(--neutral-200)]"
+        >
+          <h3
+            className="text-base sm:text-lg font-medium mb-3 sm:mb-4
+                       dark:text-[var(--neutral-700)]"
+          >
             {editingAddress ? "Edit Address" : "Add New Address"}
           </h3>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  className="block text-xs sm:text-sm font-medium text-gray-700 mb-1
+                             dark:text-[var(--neutral-500)]"
+                >
                   Full Name *
                 </label>
                 <input
@@ -235,12 +270,16 @@ const AddressForm = () => {
                   value={address.name}
                   onChange={handleChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[var(--primary)]
+                             dark:bg-[var(--neutral-200)] dark:border-[var(--neutral-200)] dark:text-[var(--neutral-700)] dark:focus:ring-[var(--primary-light)]"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  className="block text-xs sm:text-sm font-medium text-gray-700 mb-1
+                             dark:text-[var(--neutral-500)]"
+                >
                   Mobile Number *
                 </label>
                 <input
@@ -250,12 +289,16 @@ const AddressForm = () => {
                   onChange={handleChange}
                   required
                   pattern="[0-9]{10}"
-                  className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[var(--primary)]
+                             dark:bg-[var(--neutral-200)] dark:border-[var(--neutral-200)] dark:text-[var(--neutral-700)] dark:focus:ring-[var(--primary-light)]"
                 />
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  className="block text-xs sm:text-sm font-medium text-gray-700 mb-1
+                             dark:text-[var(--neutral-500)]"
+                >
                   Street Address *
                 </label>
                 <input
@@ -264,12 +307,16 @@ const AddressForm = () => {
                   value={address.addressLine1}
                   onChange={handleChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[var(--primary)]
+                             dark:bg-[var(--neutral-200)] dark:border-[var(--neutral-200)] dark:text-[var(--neutral-700)] dark:focus:ring-[var(--primary-light)]"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  className="block text-xs sm:text-sm font-medium text-gray-700 mb-1
+                             dark:text-[var(--neutral-500)]"
+                >
                   City *
                 </label>
                 <input
@@ -278,12 +325,16 @@ const AddressForm = () => {
                   value={address.city}
                   onChange={handleChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[var(--primary)]
+                             dark:bg-[var(--neutral-200)] dark:border-[var(--neutral-200)] dark:text-[var(--neutral-700)] dark:focus:ring-[var(--primary-light)]"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  className="block text-xs sm:text-sm font-medium text-gray-700 mb-1
+                             dark:text-[var(--neutral-500)]"
+                >
                   State/Province *
                 </label>
                 <input
@@ -292,12 +343,16 @@ const AddressForm = () => {
                   value={address.state}
                   onChange={handleChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[var(--primary)]
+                             dark:bg-[var(--neutral-200)] dark:border-[var(--neutral-200)] dark:text-[var(--neutral-700)] dark:focus:ring-[var(--primary-light)]"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  className="block text-xs sm:text-sm font-medium text-gray-700 mb-1
+                             dark:text-[var(--neutral-500)]"
+                >
                   Pin Code *
                 </label>
                 <input
@@ -306,12 +361,16 @@ const AddressForm = () => {
                   value={address.pincode}
                   onChange={handleChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[var(--primary)]
+                             dark:bg-[var(--neutral-200)] dark:border-[var(--neutral-200)] dark:text-[var(--neutral-700)] dark:focus:ring-[var(--primary-light)]"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  className="block text-xs sm:text-sm font-medium text-gray-700 mb-1
+                             dark:text-[var(--neutral-500)]"
+                >
                   Country *
                 </label>
                 <select
@@ -319,7 +378,8 @@ const AddressForm = () => {
                   value={address.country}
                   onChange={handleChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[var(--primary)]
+                             dark:bg-[var(--neutral-200)] dark:border-[var(--neutral-200)] dark:text-[var(--neutral-700)] dark:focus:ring-[var(--primary-light)]"
                 >
                   <option value="India">India</option>
                   <option value="United States">United States</option>
@@ -328,37 +388,41 @@ const AddressForm = () => {
               </div>
             </div>
 
-            <div className="flex items-center">
+            <div className="flex items-start sm:items-center">
               <input
                 type="checkbox"
                 name="isDefault"
                 checked={address.isDefault}
                 onChange={handleChange}
                 id="defaultAddress"
-                className="h-4 w-4 text-emerald-600 focus:ring-[var(--primary)] border-gray-300 rounded"
+                className="h-4 w-4 mt-0.5 sm:mt-0 text-emerald-600 focus:ring-[var(--primary)] border-gray-300 rounded
+                           dark:text-[var(--primary-dark)] dark:focus:ring-[var(--primary)] dark:border-[var(--neutral-500)] dark:checked:bg-[var(--primary-dark)]"
               />
               <label
                 htmlFor="defaultAddress"
-                className="ml-2 block text-sm text-gray-700"
+                className="ml-2 block text-xs sm:text-sm text-gray-700 leading-tight sm:leading-normal
+                           dark:text-[var(--neutral-500)]"
               >
                 Set as default shipping address
               </label>
             </div>
 
-            <div className="flex justify-end space-x-3 pt-4">
+            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-3 sm:pt-4">
               <button
                 type="button"
                 onClick={resetForm}
-                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                className="w-full sm:w-auto px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-md hover:bg-gray-50
+                           dark:border-[var(--neutral-200)] dark:bg-[var(--neutral-50)] dark:text-[var(--neutral-700)] dark:hover:bg-[var(--neutral-200)]"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className={`px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 ${
+                className={`w-full sm:w-auto px-4 py-2 text-sm sm:text-base bg-emerald-600 text-white rounded-md hover:bg-emerald-700 ${
                   loading ? "opacity-50 cursor-not-allowed" : ""
-                }`}
+                }
+                dark:bg-[var(--primary-dark)] dark:hover:bg-[var(--primary)] dark:disabled:bg-[var(--neutral-500)]`}
               >
                 {loading ? "Saving..." : "Save Address"}
               </button>

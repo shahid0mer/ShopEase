@@ -163,7 +163,8 @@ const Filter = ({ sort = null, keyword = "" }) => {
       {/* Mobile Filter Toggle Button */}
       <button
         onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
-        className="lg:hidden fixed bottom-6 right-6 z-40 bg-emerald-600 text-white p-4 rounded-full shadow-lg hover:bg-emerald-700 transition-colors"
+        className="lg:hidden fixed bottom-6 right-6 z-40 bg-emerald-600 text-white p-4 rounded-full shadow-lg hover:bg-emerald-700 transition-colors
+                   dark:bg-emerald-700 dark:hover:bg-emerald-600 dark:shadow-xl dark:shadow-emerald-900/50" // Dark mode adjustments
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -193,20 +194,30 @@ const Filter = ({ sort = null, keyword = "" }) => {
       <div
         className={`fixed lg:sticky top-0 left-0 h-full lg:h-auto w-72 bg-white p-6 shadow-sm border border-gray-100 z-40 transform transition-transform duration-300 ease-in-out ${
           isMobileFilterOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:translate-x-0 lg:mt-14`}
+        } lg:translate-x-0 lg:mt-14
+                   dark:bg-neutral-800 dark:border-neutral-700 dark:shadow-lg dark:shadow-neutral-900/30`} // Dark mode panel
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Filters</h2>
+          <h2
+            className="text-xl font-semibold text-gray-900
+                         dark:text-neutral-100"
+          >
+            {" "}
+            {/* Dark mode heading */}
+            Filters
+          </h2>
           <div className="flex items-center gap-4">
             <button
               onClick={clearFilters}
-              className="text-sm font-medium text-emerald-600 hover:text-emerald-800 transition-colors"
+              className="text-sm font-medium text-emerald-600 hover:text-emerald-800 transition-colors
+                         dark:text-emerald-400 dark:hover:text-emerald-300" // Dark mode clear button
             >
               Clear all
             </button>
             <button
               onClick={() => setIsMobileFilterOpen(false)}
-              className="lg:hidden text-gray-500 hover:text-gray-700"
+              className="lg:hidden text-gray-500 hover:text-gray-700
+                         dark:text-neutral-400 dark:hover:text-neutral-200" // Dark mode close button
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -226,8 +237,18 @@ const Filter = ({ sort = null, keyword = "" }) => {
 
         {/* Show current search keyword if exists */}
         {urlKeyword && (
-          <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-700">
+          <div
+            className="mb-4 p-3 bg-blue-50 rounded-lg
+                          dark:bg-blue-900 dark:bg-opacity-30"
+          >
+            {" "}
+            {/* Dark mode search keyword background */}
+            <p
+              className="text-sm text-blue-700
+                          dark:text-blue-300"
+            >
+              {" "}
+              {/* Dark mode search keyword text */}
               <span className="font-medium">Searching for:</span> "{urlKeyword}"
             </p>
           </div>
@@ -236,35 +257,64 @@ const Filter = ({ sort = null, keyword = "" }) => {
         <div className="space-y-8 h-[calc(100%-180px)] overflow-y-auto pb-4">
           {/* Price Range */}
           <div>
-            <h3 className="text-base font-medium text-gray-800 mb-4">
+            <h3
+              className="text-base font-medium text-gray-800 mb-4
+                           dark:text-neutral-200"
+            >
+              {" "}
+              {/* Dark mode price range heading */}
               Price Range
             </h3>
             <div className="flex items-center gap-3 mb-3">
               <div className="flex-1">
-                <label className="block text-xs text-gray-500 mb-1">Min</label>
+                <label
+                  className="block text-xs text-gray-500 mb-1
+                                  dark:text-neutral-400"
+                >
+                  {" "}
+                  {/* Dark mode label */}
+                  Min
+                </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    $
+                  <span
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400
+                                   dark:text-neutral-500"
+                  >
+                    {" "}
+                    {/* Dark mode dollar sign */}$
                   </span>
                   <input
                     type="number"
                     value={activeFilters.priceRange.min}
                     onChange={(e) => updatePriceRange(e, "min")}
-                    className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500"
+                    className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500
+                               dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-50 dark:focus:ring-emerald-800 dark:focus:border-emerald-400" // Dark mode input
                   />
                 </div>
               </div>
               <div className="flex-1">
-                <label className="block text-xs text-gray-500 mb-1">Max</label>
+                <label
+                  className="block text-xs text-gray-500 mb-1
+                                  dark:text-neutral-400"
+                >
+                  {" "}
+                  {/* Dark mode label */}
+                  Max
+                </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    $
+                  <span
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400
+                                   dark:text-neutral-500"
+                  >
+                    {" "}
+                    {/* Dark mode dollar sign */}$
                   </span>
                   <input
                     type="number"
                     value={activeFilters.priceRange.max}
                     onChange={(e) => updatePriceRange(e, "max")}
-                    className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500"
+                    className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500
+                               dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-50 dark:focus:ring-emerald-800 dark:focus:border-emerald-400" // Dark mode input
                   />
                 </div>
               </div>
@@ -276,7 +326,8 @@ const Filter = ({ sort = null, keyword = "" }) => {
                 max="10000"
                 value={activeFilters.priceRange.min}
                 onChange={(e) => updatePriceRange(e, "min")}
-                className="w-full h-1.5 bg-gray-200 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-emerald-500"
+                className="w-full h-1.5 bg-gray-200 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-emerald-500
+                           dark:bg-neutral-600 dark:[&::-webkit-slider-thumb]:bg-emerald-400" // Dark mode range input and thumb
               />
               <input
                 type="range"
@@ -284,15 +335,27 @@ const Filter = ({ sort = null, keyword = "" }) => {
                 max="10000"
                 value={activeFilters.priceRange.max}
                 onChange={(e) => updatePriceRange(e, "max")}
-                className="w-full h-1.5 bg-gray-200 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-emerald-500 mt-2"
+                className="w-full h-1.5 bg-gray-200 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-emerald-500 mt-2
+                           dark:bg-neutral-600 dark:[&::-webkit-slider-thumb]:bg-emerald-400" // Dark mode range input and thumb
               />
             </div>
           </div>
 
           {/* Filter Groups */}
           {filterGroups.map((group) => (
-            <div key={group.title} className="border-t border-gray-100 pt-6">
-              <h3 className="text-base font-medium text-gray-800 mb-3">
+            <div
+              key={group.title}
+              className="border-t border-gray-100 pt-6
+                                            dark:border-neutral-700"
+            >
+              {" "}
+              {/* Dark mode border */}
+              <h3
+                className="text-base font-medium text-gray-800 mb-3
+                             dark:text-neutral-200"
+              >
+                {" "}
+                {/* Dark mode group heading */}
                 {group.title}
               </h3>
               <ul className="space-y-2">
@@ -309,9 +372,15 @@ const Filter = ({ sort = null, keyword = "" }) => {
                               onChange={() =>
                                 toggleFilter(group.type, option.value)
                               }
-                              className="h-4 w-4 border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                              className="h-4 w-4 border-gray-300 text-emerald-600 focus:ring-emerald-500
+                                         dark:border-neutral-500 dark:bg-neutral-700 dark:checked:bg-emerald-500 dark:focus:ring-emerald-600 dark:checked:focus:bg-emerald-500" // Dark mode radio
                             />
-                            <span className="ml-3 text-gray-700 flex items-center">
+                            <span
+                              className="ml-3 text-gray-700 flex items-center
+                                             dark:text-neutral-300"
+                            >
+                              {" "}
+                              {/* Dark mode label */}
                               {option.label}
                               <span className="ml-2 text-amber-400">
                                 {"★".repeat(5)}
@@ -328,15 +397,26 @@ const Filter = ({ sort = null, keyword = "" }) => {
                               onChange={() =>
                                 toggleFilter(group.type, option.label)
                               }
-                              className="h-4 w-4 border-gray-300 rounded text-emerald-600 focus:ring-emerald-500"
+                              className="h-4 w-4 border-gray-300 rounded text-emerald-600 focus:ring-emerald-500
+                                         dark:border-neutral-500 dark:bg-neutral-700 dark:checked:bg-emerald-500 dark:focus:ring-emerald-600 dark:checked:focus:bg-emerald-500" // Dark mode checkbox
                             />
-                            <span className="ml-3 text-gray-700">
+                            <span
+                              className="ml-3 text-gray-700
+                                             dark:text-neutral-300"
+                            >
+                              {" "}
+                              {/* Dark mode label */}
                               {option.label}
                             </span>
                           </>
                         )}
                       </div>
-                      <span className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-full">
+                      <span
+                        className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-full
+                                       dark:text-neutral-400 dark:bg-neutral-700"
+                      >
+                        {" "}
+                        {/* Dark mode count bubble */}
                         {option.count}
                       </span>
                     </label>
@@ -347,10 +427,16 @@ const Filter = ({ sort = null, keyword = "" }) => {
           ))}
         </div>
 
-        <div className="mt-8 pt-6 border-t border-gray-100">
+        <div
+          className="mt-8 pt-6 border-t border-gray-100
+                        dark:border-neutral-700"
+        >
+          {" "}
+          {/* Dark mode border */}
           <button
             onClick={applyFilters}
-            className="w-full py-3 px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors shadow-sm hover:shadow-md"
+            className="w-full py-3 px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors shadow-sm hover:shadow-md
+                       dark:bg-emerald-700 dark:hover:bg-emerald-600 dark:shadow-lg dark:shadow-emerald-900/50" // Dark mode apply button
           >
             Apply Filters
           </button>

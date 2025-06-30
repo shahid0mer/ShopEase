@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Filter from "../components/Filter";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/Navbar"; // Navbar is imported but not directly rendered in this component's return
 import Footer from "../components/Footer";
 import BreadcrumbTrail from "../components/BreadcrumbTrail";
 import Producthero from "../components/Producthero";
@@ -97,7 +97,10 @@ const Products = () => {
   }, [searchParams, categoryId]); // Simplified dependencies
 
   return (
-    <div>
+    // Main container for the entire products page
+    <div className="bg-white dark:bg-neutral-950">
+      {" "}
+      {/* Added dark mode background */}
       <div className="mx-auto">
         <BreadcrumbTrail />
         <div className="my-6">
@@ -109,7 +112,11 @@ const Products = () => {
             <div className="mb-6">
               <SortBy onSortChange={handleSortChange} />
             </div>
-            <div className="bg-white shadow-md p-6">
+            <div
+              className="bg-white shadow-md p-6
+                            dark:bg-neutral-800 dark:shadow-neutral-900/30"
+            >
+              {" "}
               {loading && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   {[...Array(8)].map((_, index) => (
@@ -118,8 +125,19 @@ const Products = () => {
                 </div>
               )}
               {error && (
-                <div className="w-auto h-[993px] flex justify-center items-center animate-pulse">
-                  <img src={noproductfound} alt="" />
+                <div
+                  className="w-auto h-[993px] flex flex-col justify-center items-center animate-pulse
+                                dark:bg-neutral-800"
+                >
+                  {" "}
+                  <img
+                    src={noproductfound}
+                    alt="No product found"
+                    className="dark:filter dark:invert dark:opacity-80"
+                  />{" "}
+                  <p className="text-red-500 mt-4 dark:text-red-400">
+                    Failed to load products.
+                  </p>{" "}
                 </div>
               )}
               <ProductGrid />

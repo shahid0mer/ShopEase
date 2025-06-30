@@ -169,14 +169,16 @@ export const cancelOrder = async (req, res) => {
         .json({ success: false, message: "Order not found" });
     }
 
-    if (order.status === "DELIVERED" || order.status === "CANCELLED") {
+    console.log("Order status:", order.status);
+
+    if (order.status === "Delivered" || order.status === "Cancelled") {
       return res.json({
         success: false,
         message: "Order cannot be cancelled",
       });
     }
 
-    order.status = "CANCELLED";
+    order.status = "Cancelled";
     order.cancelledAt = new Date();
     await order.save();
 

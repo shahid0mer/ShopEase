@@ -6,9 +6,15 @@ import {
   addCarousel,
   deleteCarousel,
 } from "../controllers/carousalController.js";
+import authRole from "../middlewares/authRole.js";
 
 carousalRouter.get("/get", getCarousels);
-carousalRouter.post("/add", uploadMemory.single("image"), addCarousel);
-carousalRouter.delete("/:id", deleteCarousel);
+carousalRouter.post(
+  "/add",
+  uploadMemory.single("image"),
+  authRole(["admin"]),
+  addCarousel
+);
+carousalRouter.delete("/:id", authRole(["admin"]), deleteCarousel);
 
 export default carousalRouter;

@@ -27,8 +27,14 @@ const ProductDisplay = () => {
     }
   }, [product]);
 
-  if (loading) return <div className="p-4 text-center">Loading...</div>;
-  if (error) return <div className="p-4 text-center text-red-500">{error}</div>;
+  if (loading)
+    return (
+      <div className="w-8 h-8 border-4 border-[var(--primary)] border-t-transparent rounded-full animate-spin">
+        {" "}
+        loading
+      </div>
+    );
+  if (error) return toast.error(error);
   if (!product) return <div className="p-4 text-center">No product found.</div>;
 
   const collapsedHeight = "300px";

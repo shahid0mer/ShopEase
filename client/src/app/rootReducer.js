@@ -9,17 +9,23 @@ import addressReducer from "../Features/User/addressSlice";
 import reviewReducer from "../Features/Reviews/reviewSlice";
 import orderReducer from "../Features/Order/orderSlice";
 import carousalreducer from "../Features/Carousal/carousalSlice";
+import darkModeReducer from "../Features/DarkMode/darkModeSlice";
+import adminReducer from "../Features/Admin/adminSlice";
 
-// Auth persist config
 const authPersistConfig = {
   key: "auth",
   storage,
   whitelist: ["user", "isAuthenticated"],
 };
+const adminPersistConfig = {
+  key: "admin",
+  storage,
+  whitelist: ["user", "isAuthenticated", "initialized"],
+};
 
-// Combine reducers
 const combinedReducer = combineReducers({
   auth: persistReducer(authPersistConfig, authReducer),
+  admin: persistReducer(adminPersistConfig, adminReducer),
   product: productReducer,
   category: categoryReducer,
   cart: cartReducer,
@@ -27,9 +33,9 @@ const combinedReducer = combineReducers({
   reviews: reviewReducer,
   order: orderReducer,
   carousel: carousalreducer,
+  darkMode: darkModeReducer,
 });
 
-// Root persist config
 const rootPersistConfig = {
   key: "root",
   version: 1,

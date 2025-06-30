@@ -1,5 +1,3 @@
-// User Registration : /api/user/register
-
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";

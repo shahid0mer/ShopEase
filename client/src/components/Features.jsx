@@ -4,10 +4,20 @@ const Features = () => {
   return (
     <div className="px-4 sm:px-8 md:px-16 lg:px-[300px] pt-16 md:pt-32 lg:pt-[200px]">
       <div className="mb-12 md:mb-[100px]">
-        <p className="text-[1.75rem] sm:text-[2rem] md:text-[2.25rem] lg:text-[2.5rem] font-montserrat font-extrabold text-center text-[var(--neutral-800)] tracking-tight mb-[var(--space-lg)]">
+        <p
+          className="text-[1.75rem] sm:text-[2rem] md:text-[2.25rem] lg:text-[2.5rem] font-montserrat font-extrabold text-center text-[var(--neutral-800)] tracking-tight mb-[var(--space-lg)]
+                    dark:text-neutral-100"
+        >
+          {" "}
+          {/* Added for dark mode heading color */}
           Why Shop With Us?
         </p>
-        <p className="text-center text-[var(--neutral-500)] text-[1rem] sm:text-[1.125rem] mx-auto max-w-2xl">
+        <p
+          className="text-center text-[var(--neutral-500)] text-[1rem] sm:text-[1.125rem] mx-auto max-w-2xl
+                    dark:text-neutral-400"
+        >
+          {" "}
+          {/* Added for dark mode paragraph color */}
           Experience the difference with our commitment to quality, convenience,
           and customer satisfaction.
         </p>
@@ -25,7 +35,8 @@ const Features = () => {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="stroke-[var(--primary)] group-hover:stroke-white transition-colors"
+                className="stroke-[var(--primary)] group-hover:stroke-white transition-colors
+                           dark:stroke-[var(--primary-light)] dark:group-hover:stroke-neutral-900" // Dark mode icon color
               >
                 <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
                 <path d="M2 17l10 5 10-5"></path>
@@ -46,7 +57,8 @@ const Features = () => {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="stroke-[var(--primary)] group-hover:stroke-white transition-colors"
+                className="stroke-[var(--primary)] group-hover:stroke-white transition-colors
+                           dark:stroke-[var(--primary-light)] dark:group-hover:stroke-neutral-900" // Dark mode icon color
               >
                 <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
               </svg>
@@ -65,7 +77,8 @@ const Features = () => {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="stroke-[var(--primary)] group-hover:stroke-white transition-colors"
+                className="stroke-[var(--primary)] group-hover:stroke-white transition-colors
+                           dark:stroke-[var(--primary-light)] dark:group-hover:stroke-neutral-900" // Dark mode icon color
               >
                 <circle cx="12" cy="12" r="10"></circle>
                 <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
@@ -86,7 +99,8 @@ const Features = () => {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="stroke-[var(--primary)] group-hover:stroke-white transition-colors"
+                className="stroke-[var(--primary)] group-hover:stroke-white transition-colors
+                           dark:stroke-[var(--primary-light)] dark:group-hover:stroke-neutral-900" // Dark mode icon color
               >
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
@@ -106,7 +120,8 @@ const Features = () => {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="stroke-[var(--primary)] group-hover:stroke-white transition-colors"
+                className="stroke-[var(--primary)] group-hover:stroke-white transition-colors
+                           dark:stroke-[var(--primary-light)] dark:group-hover:stroke-neutral-900" // Dark mode icon color
               >
                 <path d="M14 19l-7-7 7-7"></path>
                 <path d="M14 19l-7-7 7-7"></path>
@@ -126,7 +141,8 @@ const Features = () => {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="stroke-[var(--primary)] group-hover:stroke-white transition-colors"
+                className="stroke-[var(--primary)] group-hover:stroke-white transition-colors
+                           dark:stroke-[var(--primary-light)] dark:group-hover:stroke-neutral-900" // Dark mode icon color
               >
                 <path d="M17 19.22H5V7.99a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v10.23"></path>
                 <circle cx="7" cy="4" r="2"></circle>
@@ -140,16 +156,29 @@ const Features = () => {
         ].map((feature, index) => (
           <div
             key={index}
-            className="w-full min-h-[250px] md:min-h-[300px] bg-white flex flex-col justify-center items-center gap-8 md:gap-12 p-6 md:p-[var(--space-2xl)] rounded-[var(--radius-xl)] border border-[var(--neutral-200)] shadow-[var(--shadow-sm)] hover:border-[var(--primary-dark)] hover:translate-y-[-5px] hover:shadow-[var(--shadow-lg)] transition-all group duration-300"
+            className="w-full min-h-[250px] md:min-h-[300px] bg-white flex flex-col justify-center items-center gap-8 md:gap-12 p-6 md:p-[var(--space-2xl)] rounded-[var(--radius-xl)] border border-[var(--neutral-200)] shadow-[var(--shadow-sm)] hover:border-[var(--primary-dark)] hover:translate-y-[-5px] hover:shadow-[var(--shadow-lg)] transition-all group duration-300
+                       dark:bg-neutral-800 dark:border-neutral-700 dark:shadow-none dark:hover:border-[var(--primary)] dark:hover:shadow-xl dark:hover:shadow-neutral-700/30" // Dark mode card styles
           >
-            <div className="rounded-[50%] bg-[var(--primary-light)] p-4 md:p-5 group-hover:bg-[var(--primary)] transition-colors">
+            <div
+              className="rounded-[50%] bg-[var(--primary-light)] p-4 md:p-5 group-hover:bg-[var(--primary)] transition-colors
+                            dark:bg-[var(--primary-dark)] dark:group-hover:bg-[var(--primary)]"
+            >
+              {" "}
               {feature.icon}
             </div>
             <div className="flex flex-col justify-center items-center">
-              <h3 className="text-center font-bold text-[1.125rem] md:text-[1.25rem] text-[var(--neutral-800)]">
+              <h3
+                className="text-center font-bold text-[1.125rem] md:text-[1.25rem] text-[var(--neutral-800)]
+                             dark:text-neutral-100"
+              >
+                {" "}
                 {feature.title}
               </h3>
-              <p className="mt-4 md:mt-7 text-center text-[0.875rem] md:text-[1rem] text-[var(--neutral-500)]">
+              <p
+                className="mt-4 md:mt-7 text-center text-[0.875rem] md:text-[1rem] text-[var(--neutral-500)]
+                             dark:text-neutral-400"
+              >
+                {" "}
                 {feature.description}
               </p>
             </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addProduct } from "../Features/Product/productSlice";
 import { fetchCategories } from "../Features/Product/categorySlice";
+import { toast } from "sonner";
 
 const AddProduct = () => {
   const dispatch = useDispatch();
@@ -32,7 +33,7 @@ const AddProduct = () => {
 
   useEffect(() => {
     if (successMessage) {
-      alert(successMessage);
+      toast.success(successMessage);
       setProductData({
         name: "",
         description: "",
@@ -138,17 +139,20 @@ const AddProduct = () => {
   };
 
   return (
-    <div className="w-full p-6 rounded-lg">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Add New Product</h1>
+    // Main container background and text color
+    <div className="w-full p-6 rounded-lg bg-white dark:bg-neutral-900">
+      <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
+        Add New Product
+      </h1>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded dark:bg-red-900 dark:border-red-700 dark:text-red-300">
           {error.message}
         </div>
       )}
 
       {categoryError && (
-        <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
+        <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded dark:bg-yellow-900 dark:border-yellow-700 dark:text-yellow-300">
           Failed to load categories: {categoryError}
         </div>
       )}
@@ -156,15 +160,15 @@ const AddProduct = () => {
       <form onSubmit={handleSubmit}>
         {/* Upload Box with Drag & Drop */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-700 mb-4">
+          <h2 className="text-lg font-semibold text-gray-700 dark:text-neutral-200 mb-4">
             Product Images
           </h2>
 
           <div
             className={`cursor-pointer border-2 border-dashed rounded-lg h-32 w-full max-w-md flex flex-col items-center justify-center transition-all duration-200 ${
               isDragOver
-                ? "border-emerald-500 bg-emerald-50 text-emerald-600"
-                : "border-gray-300 text-gray-400 hover:text-gray-600 hover:border-gray-400"
+                ? "border-emerald-500 bg-emerald-50 text-emerald-600 dark:bg-emerald-900 dark:border-emerald-700 dark:text-emerald-300"
+                : "border-gray-300 text-gray-400 hover:text-gray-600 hover:border-gray-400 dark:border-neutral-600 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:border-neutral-500"
             }`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -188,7 +192,7 @@ const AddProduct = () => {
             <span className="text-sm font-medium mb-1">
               {isDragOver ? "Drop images here" : "Upload Images"}
             </span>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-gray-500 dark:text-neutral-400">
               Drag & drop or click to select
             </span>
             <input
@@ -204,14 +208,14 @@ const AddProduct = () => {
           {/* Uploaded Previews with Drag & Drop Reordering */}
           {images.length > 0 && (
             <div className="mt-6">
-              <p className="text-sm text-gray-600 mb-3">
+              <p className="text-sm text-gray-600 dark:text-neutral-300 mb-3">
                 Drag images to reorder them (first image will be the main image)
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {images.map((image, index) => (
                   <div
                     key={index}
-                    className="h-24 w-24 relative border-2 border-gray-300 rounded-md overflow-hidden group cursor-move hover:border-emerald-400 transition-colors"
+                    className="h-24 w-24 relative border-2 border-gray-300 rounded-md overflow-hidden group cursor-move hover:border-emerald-400 transition-colors dark:border-neutral-600 dark:hover:border-emerald-600"
                     draggable
                     onDragStart={(e) => handleImageDragStart(e, index)}
                     onDragOver={handleImageDragOver}
@@ -261,13 +265,13 @@ const AddProduct = () => {
 
         {/* Product Name */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-700 mb-2">
+          <h2 className="text-lg font-semibold text-gray-700 dark:text-neutral-200 mb-2">
             Product Name *
           </h2>
           <input
             type="text"
             placeholder="Type here"
-            className="w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 rounded"
+            className="w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 rounded dark:bg-neutral-800 dark:border-neutral-600 dark:text-white dark:focus:ring-emerald-900 dark:focus:border-emerald-600"
             value={productData.name}
             onChange={(e) =>
               setProductData({ ...productData, name: e.target.value })
@@ -277,13 +281,13 @@ const AddProduct = () => {
 
         {/* Description */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-700 mb-2">
+          <h2 className="text-lg font-semibold text-gray-700 dark:text-neutral-200 mb-2">
             Product Description
           </h2>
           <textarea
             placeholder="Type here"
             rows={4}
-            className="w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 rounded"
+            className="w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 rounded dark:bg-neutral-800 dark:border-neutral-600 dark:text-white dark:focus:ring-emerald-900 dark:focus:border-emerald-600"
             value={productData.description}
             onChange={(e) =>
               setProductData({ ...productData, description: e.target.value })
@@ -293,16 +297,16 @@ const AddProduct = () => {
 
         {/* Category Selection */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-700 mb-2">
+          <h2 className="text-lg font-semibold text-gray-700 dark:text-neutral-200 mb-2">
             Category *
           </h2>
           {loadingCategories ? (
-            <div className="w-full px-4 py-2 border border-gray-300 rounded bg-gray-50 text-gray-500">
+            <div className="w-full px-4 py-2 border border-gray-300 rounded bg-gray-50 text-gray-500 dark:bg-neutral-800 dark:border-neutral-600 dark:text-neutral-400">
               Loading categories...
             </div>
           ) : (
             <select
-              className="w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 bg-white rounded"
+              className="w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 bg-white rounded dark:bg-neutral-800 dark:border-neutral-600 dark:text-white dark:focus:ring-emerald-900 dark:focus:border-emerald-600"
               value={productData.category_id}
               onChange={(e) =>
                 setProductData({ ...productData, category_id: e.target.value })
@@ -324,7 +328,7 @@ const AddProduct = () => {
           {!loadingCategories &&
             (categories || []).length === 0 &&
             !categoryError && (
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-500 dark:text-neutral-400 mt-1">
                 No categories found. Please add categories first.
               </p>
             )}
@@ -332,23 +336,23 @@ const AddProduct = () => {
 
         {/* Pricing */}
         <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-700 mb-4">
+          <h2 className="text-lg font-semibold text-gray-700 dark:text-neutral-200 mb-4">
             Product Price
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">
                 Original Price
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-neutral-400">
                   $
                 </span>
                 <input
                   type="number"
                   min="0"
                   step="0.01"
-                  className="w-full pl-8 pr-4 py-2 border border-gray-300 focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 rounded"
+                  className="w-full pl-8 pr-4 py-2 border border-gray-300 focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 rounded dark:bg-neutral-800 dark:border-neutral-600 dark:text-white dark:focus:ring-emerald-900 dark:focus:border-emerald-600"
                   value={productData.price}
                   onChange={(e) =>
                     setProductData({ ...productData, price: e.target.value })
@@ -357,18 +361,18 @@ const AddProduct = () => {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">
                 Offer Price
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-neutral-400">
                   $
                 </span>
                 <input
                   type="number"
                   min="0"
                   step="0.01"
-                  className="w-full pl-8 pr-4 py-2 border border-gray-300 focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 rounded"
+                  className="w-full pl-8 pr-4 py-2 border border-gray-300 focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 rounded dark:bg-neutral-800 dark:border-neutral-600 dark:text-white dark:focus:ring-emerald-900 dark:focus:border-emerald-600"
                   value={productData.offerPrice}
                   onChange={(e) =>
                     setProductData({
@@ -388,8 +392,8 @@ const AddProduct = () => {
           disabled={loading || loadingCategories}
           className={`w-full py-3 px-6 ${
             loading || loadingCategories
-              ? "bg-emerald-400 cursor-not-allowed"
-              : "bg-emerald-600 hover:bg-emerald-700"
+              ? "bg-emerald-400 cursor-not-allowed dark:bg-emerald-700 dark:text-neutral-300"
+              : "bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-800 dark:hover:bg-emerald-900"
           } text-white font-medium rounded-lg shadow-sm transition-colors`}
         >
           {loading

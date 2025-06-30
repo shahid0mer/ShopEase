@@ -54,7 +54,7 @@ const Footer = () => {
                 </defs>
               </svg>
 
-              <span className="font-montserrat font-bold text-black text-[1.8rem] tracking-tight">
+              <span className="font-montserrat font-bold text-black dark:text-white text-[1.8rem] tracking-tight">
                 Shop<span className="text-[#d97706] tracking-tight">Ease</span>
               </span>
             </div>
@@ -175,15 +175,12 @@ const Footer = () => {
           </div>
         </div>
 
-        
         <div className="w-full text-white text-[0.9rem] text-center py-4 border-t border-[rgba(255,255,255,0.1)] flex flex-col md:flex-row items-center justify-center md:justify-between px-0">
           {" "}
-          
           <p className="mb-2 md:mb-0 text-[hsla(0,0%,100%,0.7)]">
             &copy; {new Date().getFullYear()} ShopEase. All rights reserved.
           </p>
           <div className="flex gap-3 mt-2 md:mt-0">
-            
             <img
               src="https://img.icons8.com/fluency/32/visa.png"
               alt="Visa"

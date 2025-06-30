@@ -1,5 +1,4 @@
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   loginUser,
@@ -8,6 +7,7 @@ import {
 } from "../Features/User/authSlice";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import { shopEaseToast } from "../utils/shopEaseToast";
 import { toast } from "sonner";
 
 const Login = ({ onClose }) => {
@@ -20,55 +20,74 @@ const Login = ({ onClose }) => {
   const dispatch = useDispatch();
   const location = useLocation();
 
-  const { user, isAuthenticated } = useSelector((state) => state.auth);
-  const { loading, error } = useSelector((state) => state.auth);
-
-  if (isAuthenticated) {
-    toast.success(`Welcome, ${user.name}`);
-  }
+  const { user, isAuthenticated, loading, error } = useSelector(
+    (state) => state.auth
+  );
 
   const isSellerPage = location.pathname.startsWith("/seller");
+
+  useEffect(() => {
+    if (isAuthenticated && user?.name) {
+      toast.success(`Welcome, ${user.name}`);
+      const timer = setTimeout(() => {
+        navigate("/");
+        if (onClose) onClose();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, user?.name, navigate, onClose]);
+
+  useEffect(() => {
+    if (error) toast.error(error);
+  }, [error]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Basic validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     if (!email || !password) {
-      alert("Please fill in all required fields");
+      shopEaseToast.error("Please fill in all required fields.");
       return;
     }
 
-    if (isSignIn) {
-      // Handle Sign In
-      console.log("Signing in:", email, password);
-      await dispatch(loginUser({ email, password })).unwrap();
-    } else {
-      // Handle Registration
-      if (!fullName || !confirmPassword) {
-        alert("Please fill in all fields for registration");
-        return;
+    if (!emailRegex.test(email)) {
+      shopEaseToast.error("Please enter a valid email address.");
+      return;
+    }
+
+    if (password.length < 6) {
+      shopEaseToast.error("Password must be at least 6 characters.");
+      return;
+    }
+
+    try {
+      if (isSignIn) {
+        await dispatch(loginUser({ email, password })).unwrap();
+      } else {
+        if (!fullName || !confirmPassword) {
+          shopEaseToast.error("Please fill in all fields for registration.");
+          return;
+        }
+
+        if (password !== confirmPassword) {
+          shopEaseToast.error("Passwords do not match.");
+          return;
+        }
+
+        await dispatch(
+          registerUser({ email, password, name: fullName })
+        ).unwrap();
+        await dispatch(getUserProfile());
+        toast.success("Account created successfully!");
       }
-
-      if (password !== confirmPassword) {
-        alert("Passwords do not match");
-        return;
-      }
-
-      console.log("Creating account:", { email, password, name: fullName });
-
-      await dispatch(
-        registerUser({ email, password, name: fullName })
-      ).unwrap();
-      await dispatch(getUserProfile());
+    } catch (err) {
+      const errorMessage =
+        err?.message || error || "An unexpected error occurred.";
+      toast.error(`Authentication failed: ${errorMessage}`);
+      console.error("Authentication error:", err);
     }
   };
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/");
-      if (onClose) onClose();
-    }
-  }, [isAuthenticated, navigate, onClose]);
 
   const toggleForm = () => {
     setIsSignIn((prev) => !prev);
@@ -90,21 +109,19 @@ const Login = ({ onClose }) => {
           damping: 20,
           duration: 0.4,
         }}
-        className="flex justify-center items-center bg-gray-100 md:rounded-[var(--radius-lg)] max-w-[90vw] md:w-auto relative "
+        className="flex justify-center items-center bg-[var(--neutral-50)] md:rounded-[var(--radius-lg)] max-w-[90vw] md:w-auto relative overflow-hidden shadow-[var(--shadow-md)] dark:bg-[var(--neutral-50)] dark:shadow-lg"
       >
         <button
           onClick={onClose}
-          className="absolute top-0 right-2  sm:top-4 sm:right-4 text-black text-3xl font-bold z-50"
+          className="absolute top-0 right-2 sm:top-4 sm:right-4 text-[var(--neutral-800)] text-3xl font-bold z-50 dark:text-[var(--neutral-700)]"
         >
           &times;
         </button>
 
-        {/* Responsive container */}
-        <div className="p-4 md:p-0 flex flex-col md:flex-row shadow-[var(--shadow-2xl)] md:rounded-[var(--radius-lg)] w-full max-w-[90vw] md:max-w-none">
-          {/* Left Panel with gradient + SVG pattern - hidden on small screens */}
+        <div className="p-4 md:p-0 flex flex-col md:flex-row md:rounded-[var(--radius-lg)] w-full max-w-[90vw] md:max-w-none bg-[var(--neutral-50)] dark:bg-[var(--neutral-50)]">
           <motion.div className="hidden md:relative md:flex md:w-[300px] lg:w-[400px] xl:w-[600px] h-[600px] md:h-[700px] lg:h-[750px] items-center justify-center text-white overflow-hidden rounded-tl-lg rounded-bl-lg">
             <div className="absolute inset-0 bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-dark)_100%)] opacity-90 z-10"></div>
-            {/* Content */}
+
             <AnimatePresence mode="wait">
               <motion.div
                 key={isSignIn ? "signin" : "signup"}
@@ -159,7 +176,6 @@ const Login = ({ onClose }) => {
             </AnimatePresence>
           </motion.div>
 
-          {/* Right Panel - full width on mobile */}
           <AnimatePresence mode="wait">
             <motion.div
               key={isSignIn ? "signin" : "signup"}
@@ -167,9 +183,8 @@ const Login = ({ onClose }) => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -30 }}
               transition={{ duration: 0.4, ease: "easeOut" }}
-              className="flex flex-col w-full md:w-[300px] lg:w-[400px] xl:w-[600px] h-auto md:h-[700px] lg:h-[750px] items-center justify-center p-4 sm:p-6 md:p-8"
+              className="flex flex-col w-full md:w-[300px] lg:w-[400px] xl:w-[600px] h-auto md:h-[700px] lg:h-[750px] items-center justify-center p-4 sm:p-6 md:p-8 bg-[var(--neutral-50)] dark:bg-[var(--neutral-50)]"
             >
-              {/* Mobile-only toggle button */}
               <div className="md:hidden mb-6 w-full max-w-xs sm:max-w-sm">
                 <button
                   type="button"
@@ -183,7 +198,7 @@ const Login = ({ onClose }) => {
               </div>
 
               <div className="flex flex-col justify-center items-center w-full">
-                <p className="font-extrabold text-[1.5rem] sm:text-[2rem] lg:text-[2.5rem] text-[var(--neutral-800)] text-center">
+                <p className="font-extrabold text-[1.5rem] sm:text-[2rem] lg:text-[2.5rem] text-[var(--neutral-800)] text-center dark:text-[var(--neutral-700)]">
                   {isSignIn
                     ? isSellerPage
                       ? "Seller Sign In"
@@ -192,7 +207,7 @@ const Login = ({ onClose }) => {
                     ? "Create Seller Account"
                     : "Create Account"}
                 </p>
-                <p className="text-[var(--neutral-500)] text-sm sm:text-base mb-6 sm:mb-8 lg:mb-[var(--space-4xl)] text-center">
+                <p className="text-[var(--neutral-500)] text-sm sm:text-base mb-6 sm:mb-8 lg:mb-[var(--space-4xl)] text-center dark:text-[var(--neutral-500)]">
                   {isSignIn
                     ? isSellerPage
                       ? "Enter your seller credentials to access the dashboard"
@@ -209,8 +224,7 @@ const Login = ({ onClose }) => {
               >
                 {!isSignIn && (
                   <>
-                    {/* Full Name - only show for registration */}
-                    <label className="font-semibold text-[var(--neutral-700)] text-[0.75rem] sm:text-[0.875rem] leading-[0.025em] mb-1.5">
+                    <label className="font-semibold text-[var(--neutral-700)] text-[0.75rem] sm:text-[0.875rem] leading-[0.025em] mb-1.5 dark:text-[var(--neutral-500)]">
                       FULL NAME
                     </label>
                     <input
@@ -218,13 +232,14 @@ const Login = ({ onClose }) => {
                       placeholder="Enter Your Full Name"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      className="mb-4 sm:mb-6 bg-[var(--neutral-50)] placeholder-[--neutral-700] w-full pl-4 pr-4 py-2 sm:py-[var(--space-md)] rounded-[var(--space-lg)] border-2 border-[var(--neutral-200)] text-[0.875rem] sm:text-[1rem] focus:outline-none focus:border-[var(--primary)] focus:bg-white focus:shadow-[0_0_0_3px_rgba(16,185,129,0.1)] transition-all"
+                      className="mb-4 sm:mb-6 bg-[var(--neutral-50)] placeholder-[var(--neutral-500)] w-full pl-4 pr-4 py-2 sm:py-[var(--space-md)] rounded-[var(--space-lg)] border-2 border-[var(--neutral-200)] text-[0.875rem] sm:text-[1rem] focus:outline-none focus:border-[var(--primary)] focus:bg-white focus:shadow-[0_0_0_3px_rgba(16,185,129,0.1)] transition-all
+                                   dark:bg-[var(--neutral-200)] dark:placeholder-[var(--neutral-500)] dark:border-[var(--neutral-200)] dark:text-[var(--neutral-700)] dark:focus:border-[var(--primary-light)] dark:focus:bg-[var(--neutral-200)] dark:focus:shadow-[0_0_0_3px_rgba(13,148,136,0.2)]"
                     />
                   </>
                 )}
 
                 {/* Email */}
-                <label className="font-semibold text-[var(--neutral-700)] text-[0.75rem] sm:text-[0.875rem] leading-[0.025em] mb-1.5">
+                <label className="font-semibold text-[var(--neutral-700)] text-[0.75rem] sm:text-[0.875rem] leading-[0.025em] mb-1.5 dark:text-[var(--neutral-500)]">
                   EMAIL ADDRESS
                 </label>
                 <input
@@ -233,11 +248,11 @@ const Login = ({ onClose }) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="mb-4 sm:mb-6 bg-[var(--neutral-50)] placeholder-[--neutral-700] w-full pl-4 pr-4 py-2 sm:py-[var(--space-md)] rounded-[var(--space-lg)] border-2 border-[var(--neutral-200)] text-[0.875rem] sm:text-[1rem] focus:outline-none focus:border-[var(--primary)] focus:bg-white focus:shadow-[0_0_0_3px_rgba(16,185,129,0.1)] transition-all"
+                  className="mb-4 sm:mb-6 bg-[var(--neutral-50)] placeholder-[var(--neutral-500)] w-full pl-4 pr-4 py-2 sm:py-[var(--space-md)] rounded-[var(--space-lg)] border-2 border-[var(--neutral-200)] text-[0.875rem] sm:text-[1rem] focus:outline-none focus:border-[var(--primary)] focus:bg-white focus:shadow-[0_0_0_3px_rgba(16,185,129,0.1)] transition-all
+                                   dark:bg-[var(--neutral-200)] dark:placeholder-[var(--neutral-500)] dark:border-[var(--neutral-200)] dark:text-[var(--neutral-700)] dark:focus:border-[var(--primary-light)] dark:focus:bg-[var(--neutral-200)] dark:focus:shadow-[0_0_0_3px_rgba(13,148,136,0.2)]"
                 />
 
-                {/* Password */}
-                <label className="font-semibold text-[var(--neutral-700)] text-[0.75rem] sm:text-[0.875rem] leading-[0.025em] mb-1.5">
+                <label className="font-semibold text-[var(--neutral-700)] text-[0.75rem] sm:text-[0.875rem] leading-[0.025em] mb-1.5 dark:text-[var(--neutral-500)]">
                   PASSWORD
                 </label>
                 <input
@@ -246,13 +261,21 @@ const Login = ({ onClose }) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="mb-4 sm:mb-6 bg-[var(--neutral-50)] placeholder-[--neutral-700] w-full pl-4 pr-4 py-2 sm:py-[var(--space-md)] rounded-[var(--space-lg)] border-2 border-[var(--neutral-200)] text-[0.875rem] sm:text-[1rem] focus:outline-none focus:border-[var(--primary)] focus:bg-white focus:shadow-[0_0_0_3px_rgba(16,185,129,0.1)] transition-all"
+                  className="mb-4 sm:mb-6 bg-[var(--neutral-50)] placeholder-[var(--neutral-500)] w-full pl-4 pr-4 py-2 sm:py-[var(--space-md)] rounded-[var(--space-lg)] border-2 border-[var(--neutral-200)] text-[0.875rem] sm:text-[1rem] focus:outline-none focus:border-[var(--primary)] focus:bg-white focus:shadow-[0_0_0_3px_rgba(16,185,129,0.1)] transition-all
+                                   dark:bg-[var(--neutral-200)] dark:placeholder-[var(--neutral-500)] dark:border-[var(--neutral-200)] dark:text-[var(--neutral-700)] dark:focus:border-[var(--primary-light)] dark:focus:bg-[var(--neutral-200)] dark:focus:shadow-[0_0_0_3px_rgba(13,148,136,0.2)]"
                 />
-
+                {/* Conditional rendering for Forgot Password button */}
+                {isSignIn && (
+                  <button
+                    className="text-sm hover:text-[var(--primary)] cursor-pointer active:scale-95 transition-all mb-4" // Added mb-4 for spacing
+                    type="button" // Important: set type="button" to prevent form submission
+                  >
+                    Forgot Password? Click Here
+                  </button>
+                )}
                 {!isSignIn && (
                   <>
-                    {/* Confirm Password - only show for registration */}
-                    <label className="font-semibold text-[var(--neutral-700)] text-[0.75rem] sm:text-[0.875rem] leading-[0.025em] mb-1.5">
+                    <label className="font-semibold text-[var(--neutral-700)] text-[0.75rem] sm:text-[0.875rem] leading-[0.025em] mb-1.5 dark:text-[var(--neutral-500)]">
                       CONFIRM PASSWORD
                     </label>
                     <input
@@ -260,7 +283,8 @@ const Login = ({ onClose }) => {
                       placeholder="Confirm Your Password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="mb-4 sm:mb-6 bg-[var(--neutral-50)] placeholder-[--neutral-700] w-full pl-4 pr-4 py-2 sm:py-[var(--space-md)] rounded-[var(--space-lg)] border-2 border-[var(--neutral-200)] text-[0.875rem] sm:text-[1rem] focus:outline-none focus:border-[var(--primary)] focus:bg-white focus:shadow-[0_0_0_3px_rgba(16,185,129,0.1)] transition-all"
+                      className="mb-4 sm:mb-6 bg-[var(--neutral-50)] placeholder-[var(--neutral-500)] w-full pl-4 pr-4 py-2 sm:py-[var(--space-md)] rounded-[var(--space-lg)] border-2 border-[var(--neutral-200)] text-[0.875rem] sm:text-[1rem] focus:outline-none focus:border-[var(--primary)] focus:bg-white focus:shadow-[0_0_0_3px_rgba(16,185,129,0.1)] transition-all
+                                   dark:bg-[var(--neutral-200)] dark:placeholder-[var(--neutral-500)] dark:border-[var(--neutral-200)] dark:text-[var(--neutral-700)] dark:focus:border-[var(--primary-light)] dark:focus:bg-[var(--neutral-200)] dark:focus:shadow-[0_0_0_3px_rgba(13,148,136,0.2)]"
                     />
                   </>
                 )}
@@ -268,7 +292,8 @@ const Login = ({ onClose }) => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="hover:translate-y-[-2px] mt-3 sm:mt-5 border-none rounded-[var(--radius-md)] bg-[var(--secondary)] text-white font-semibold py-2 sm:py-[var(--space-md)] px-4 sm:px-[var(--space-md)] hover:bg-[var(--secondary-dark)] hover:shadow-[var(--shadow-md)] duration-400 transition-all active:scale-95 w-full disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                  className="hover:translate-y-[-2px] mt-3 sm:mt-5 border-none rounded-[var(--radius-md)] bg-[var(--secondary)] text-white font-semibold py-2 sm:py-[var(--space-md)] px-4 sm:px-[var(--space-md)] hover:bg-[var(--secondary-dark)] hover:shadow-[var(--shadow-md)] duration-400 transition-all active:scale-95 w-full disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base
+                                   dark:bg-[var(--secondary-dark)] dark:hover:bg-[var(--secondary)] dark:hover:shadow-[var(--shadow-md)] dark:disabled:bg-[var(--neutral-500)]"
                 >
                   {loading
                     ? "Loading..."
@@ -276,9 +301,8 @@ const Login = ({ onClose }) => {
                     ? "Sign In"
                     : "Create Account"}
                 </button>
-
                 {error && (
-                  <p className="text-red-500 text-xs sm:text-sm text-center mt-2">
+                  <p className="text-red-500 text-xs sm:text-sm text-center mt-2 dark:text-red-400">
                     {error}
                   </p>
                 )}

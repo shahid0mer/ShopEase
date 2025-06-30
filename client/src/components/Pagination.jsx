@@ -94,7 +94,7 @@ const Pagination = ({ currentPage, totalPages, categoryId, sort }) => {
               onClick={() => handlePageChange(page)}
               className={`h-10 w-10 flex items-center justify-center rounded-full ${
                 page === currentPage
-                  ? "bg-blue-500 text-white"
+                  ? "bg-[var(--primary)] text-white"
                   : "hover:bg-gray-100"
               }`}
             >

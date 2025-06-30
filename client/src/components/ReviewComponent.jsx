@@ -13,10 +13,12 @@ import {
   HandThumbUpIcon as ThumbUpIcon,
   HandThumbDownIcon as ThumbDownIcon,
 } from "@heroicons/react/24/solid";
+import { toast } from "sonner";
 
 const Loader = () => (
   <div className="flex justify-center items-center py-8">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>{" "}
+    {/* Dark mode loader color */}
   </div>
 );
 
@@ -61,30 +63,27 @@ const ReviewComponent = ({ productId }) => {
     }
   }, [dispatch, productId, userInfo]);
 
-  // Effect to handle success/error messages and reset state after operations
   useEffect(() => {
     if (success) {
-      // Determine if the success was from an update, add, or delete
       if (editingReviewId) {
         alert("Review updated successfully!");
-        setEditingReviewId(null); // Exit edit mode
-        setEditReviewData({ rating: 0, content: "" }); // Clear edit form data
+        setEditingReviewId(null);
+        setEditReviewData({ rating: 0, content: "" });
       } else {
-        alert("Review operation completed successfully!"); // Could be add or delete
-        setNewReview({ rating: 0, content: "" }); // Clear new review form
-        setShowReviewForm(false); // Hide add review form
+        alert("Review operation completed successfully!");
+        setNewReview({ rating: 0, content: "" });
+        setShowReviewForm(false);
       }
-      dispatch(resetReviewState()); // Reset success/error state in Redux
-      // Re-fetch reviews to ensure UI consistency, especially after add/delete
-      // For update, optimistic update in slice might be enough, but re-fetching is safer.
+      dispatch(resetReviewState());
+
       dispatch(getReviewsForProduct(productId));
     }
 
     if (error) {
-      alert(`Error: ${error}`); // Display error message
-      dispatch(resetReviewState()); // Clear error after showing it
+      toast.error(`Error: ${error}`);
+      dispatch(resetReviewState());
     }
-  }, [success, error, dispatch, editingReviewId, productId]); // Add error and editingReviewId to dependencies
+  }, [success, error, dispatch, editingReviewId, productId]);
 
   // --- Calculated Values ---
   const averageRating =
@@ -164,7 +163,7 @@ const ReviewComponent = ({ productId }) => {
           rating: editReviewData.rating,
           content: editReviewData.content,
         }),
-        alert("updatd")
+        alert("updated") // Consider using a toast notification library instead of alert for better UX
       );
     } else {
       alert("Please provide a rating and content for the update.");
@@ -191,20 +190,34 @@ const ReviewComponent = ({ productId }) => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 font-sans">
+    <div className="max-w-4xl mx-auto px-4 py-8 font-sans dark:bg-neutral-900 dark:text-neutral-100">
       {/* Loader always visible when loading */}
       {loading && <Loader />}
 
       {/* Review Summary Section */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">
+      <div
+        className="bg-white rounded-lg shadow-md p-6 mb-8
+                      dark:bg-neutral-800 dark:shadow-neutral-900/50"
+      >
+        {" "}
+        {/* Dark mode background & shadow */}
+        <h2
+          className="text-2xl font-bold mb-4 text-gray-800
+                       dark:text-neutral-100"
+        >
+          {" "}
+          {/* Dark mode heading text */}
           Customer Reviews
         </h2>
-
         <div className="flex flex-col md:flex-row items-start md:items-center gap-8">
           {/* Average Rating Display */}
           <div className="text-center">
-            <div className="text-5xl font-bold text-gray-900">
+            <div
+              className="text-5xl font-bold text-gray-900
+                            dark:text-neutral-50"
+            >
+              {" "}
+              {/* Dark mode rating number */}
               {averageRating.toFixed(1)}
             </div>
             <div className="flex justify-center mt-2">
@@ -214,12 +227,17 @@ const ReviewComponent = ({ productId }) => {
                   className={`h-6 w-6 ${
                     star <= Math.round(averageRating)
                       ? "text-yellow-400"
-                      : "text-gray-300"
+                      : "text-gray-300 dark:text-neutral-600" // Dark mode inactive star color
                   }`}
                 />
               ))}
             </div>
-            <p className="text-sm text-gray-500 mt-1">
+            <p
+              className="text-sm text-gray-500 mt-1
+                          dark:text-neutral-400"
+            >
+              {" "}
+              {/* Dark mode review count text */}
               {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
             </p>
           </div>
@@ -228,16 +246,31 @@ const ReviewComponent = ({ productId }) => {
           <div className="flex-1 w-full">
             {ratingDistribution.map(({ star, count, percent }) => (
               <div key={star} className="flex items-center mb-2 gap-2">
-                <div className="w-12 text-sm font-medium text-gray-600">
+                <div
+                  className="w-12 text-sm font-medium text-gray-600
+                                dark:text-neutral-300"
+                >
+                  {" "}
+                  {/* Dark mode star label */}
                   {star} star
                 </div>
-                <div className="flex-1 mx-2 h-4 bg-gray-200 rounded-full">
+                <div
+                  className="flex-1 mx-2 h-4 bg-gray-200 rounded-full
+                                dark:bg-neutral-700"
+                >
+                  {" "}
+                  {/* Dark mode bar background */}
                   <div
                     className="h-4 bg-yellow-400 rounded-full transition-all duration-500"
                     style={{ width: `${percent}%` }}
                   ></div>
                 </div>
-                <div className="w-10 text-sm text-gray-500 text-right">
+                <div
+                  className="w-10 text-sm text-gray-500 text-right
+                                dark:text-neutral-400"
+                >
+                  {" "}
+                  {/* Dark mode count text */}
                   {count}
                 </div>
               </div>
@@ -255,13 +288,16 @@ const ReviewComponent = ({ productId }) => {
               setShowReviewForm(!showReviewForm); // Toggle visibility of add form
               setEditingReviewId(null); // Hide edit form when opening add form
             }}
-            className="bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all text-white font-medium py-2 px-4 rounded-md"
+            className="bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all text-white font-medium py-2 px-4 rounded-md
+                       dark:bg-blue-700 dark:hover:bg-blue-600 dark:active:scale-95 dark:text-white" // Dark mode button
             disabled={loading} // Disable if any operation is in progress
           >
             {showReviewForm ? "Cancel Add Review" : "Write a Review"}
           </button>
         ) : (
-          <p className="text-gray-600 text-sm">
+          <p className="text-gray-600 text-sm dark:text-neutral-400">
+            {" "}
+            {/* Dark mode login prompt */}
             Please log in to write a review.
           </p>
         )}
@@ -270,16 +306,23 @@ const ReviewComponent = ({ productId }) => {
       {/* Conditional rendering for ADD NEW REVIEW Form */}
       {showReviewForm &&
         !editingReviewId && ( // Only show if adding, and not editing
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h3 className="text-xl font-bold mb-4">Write Your Review</h3>
-            {error && ( // Display error from Redux state
-              <div className="bg-red-100 text-red-700 p-3 rounded-md mb-4">
-                {error}
-              </div>
-            )}
+          <div
+            className="bg-white rounded-lg shadow-md p-6 mb-8
+                          dark:bg-neutral-800 dark:shadow-neutral-900/50"
+          >
+            {" "}
+            <h3 className="text-xl font-bold mb-4 dark:text-neutral-100">
+              Write Your Review
+            </h3>{" "}
+            {error && toast.error(error)}
             <form onSubmit={handleSubmitReview}>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  className="block text-sm font-medium text-gray-700 mb-2
+                                  dark:text-neutral-300"
+                >
+                  {" "}
+                  {/* Dark mode label */}
                   Your Rating
                 </label>
                 <div className="flex">
@@ -298,7 +341,7 @@ const ReviewComponent = ({ productId }) => {
                         className={`h-8 w-8 transition-colors ${
                           star <= (hoverRating || newReview.rating)
                             ? "text-yellow-400"
-                            : "text-gray-300"
+                            : "text-gray-300 dark:text-neutral-600" // Dark mode inactive star color
                         }`}
                       />
                     </button>
@@ -309,7 +352,8 @@ const ReviewComponent = ({ productId }) => {
               <div className="mb-4">
                 <label
                   htmlFor="newComment"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className="block text-sm font-medium text-gray-700 mb-1
+                                    dark:text-neutral-300" // Dark mode label
                 >
                   Your Review
                 </label>
@@ -320,7 +364,8 @@ const ReviewComponent = ({ productId }) => {
                   onChange={(e) =>
                     setNewReview({ ...newReview, content: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500
+                             dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-200 dark:placeholder-neutral-400 dark:focus:ring-blue-400 dark:focus:border-blue-400" // Dark mode textarea
                   placeholder="What did you like or dislike?"
                   required
                 />
@@ -328,7 +373,8 @@ const ReviewComponent = ({ productId }) => {
 
               <button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400"
+                className="w-full bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400
+                           dark:bg-blue-700 dark:hover:bg-blue-600 dark:active:scale-95 dark:text-white dark:disabled:bg-neutral-600 dark:focus:ring-blue-400 dark:focus:ring-offset-neutral-800" // Dark mode submit button
                 disabled={
                   loading || newReview.rating === 0 || !newReview.content.trim()
                 }
@@ -341,16 +387,25 @@ const ReviewComponent = ({ productId }) => {
 
       {/* Conditional rendering for EDIT REVIEW Form */}
       {editingReviewId && ( // Only show if a review is being edited
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h3 className="text-xl font-bold mb-4">Edit Your Review</h3>
-          {error && ( // Display error from Redux state
-            <div className="bg-red-100 text-red-700 p-3 rounded-md mb-4">
-              {error}
-            </div>
-          )}
+        <div
+          className="bg-white rounded-lg shadow-md p-6 mb-8
+                        dark:bg-neutral-800 dark:shadow-neutral-900/50"
+        >
+          {" "}
+          {/* Dark mode background & shadow */}
+          <h3 className="text-xl font-bold mb-4 dark:text-neutral-100">
+            Edit Your Review
+          </h3>{" "}
+          {/* Dark mode heading */}
+          {error && toast.error(error)}
           <form onSubmit={handleUpdateReview}>
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                className="block text-sm font-medium text-gray-700 mb-2
+                                dark:text-neutral-300"
+              >
+                {" "}
+                {/* Dark mode label */}
                 Your Rating
               </label>
               <div className="flex">
@@ -369,7 +424,7 @@ const ReviewComponent = ({ productId }) => {
                       className={`h-8 w-8 transition-colors ${
                         star <= (hoverRating || editReviewData.rating)
                           ? "text-yellow-400"
-                          : "text-gray-300"
+                          : "text-gray-300 dark:text-neutral-600" // Dark mode inactive star color
                       }`}
                     />
                   </button>
@@ -380,7 +435,8 @@ const ReviewComponent = ({ productId }) => {
             <div className="mb-4">
               <label
                 htmlFor="editComment"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-700 mb-1
+                                  dark:text-neutral-300" // Dark mode label
               >
                 Your Review
               </label>
@@ -394,7 +450,8 @@ const ReviewComponent = ({ productId }) => {
                     content: e.target.value,
                   })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500
+                           dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-200 dark:placeholder-neutral-400 dark:focus:ring-blue-400 dark:focus:border-blue-400" // Dark mode textarea
                 placeholder="Edit your review"
                 required
               />
@@ -403,7 +460,8 @@ const ReviewComponent = ({ productId }) => {
             <div className="flex gap-2">
               <button
                 type="submit"
-                className="flex-1 bg-green-600 hover:bg-green-700 active:scale-95 transition-all text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-400"
+                className="flex-1 bg-green-600 hover:bg-green-700 active:scale-95 transition-all text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-400
+                           dark:bg-green-700 dark:hover:bg-green-600 dark:active:scale-95 dark:text-white dark:disabled:bg-neutral-600 dark:focus:ring-green-400 dark:focus:ring-offset-neutral-800" // Dark mode update button
                 disabled={
                   loading ||
                   editReviewData.rating === 0 ||
@@ -415,7 +473,8 @@ const ReviewComponent = ({ productId }) => {
               <button
                 type="button"
                 onClick={handleCancelEdit}
-                className="flex-none bg-gray-500 hover:bg-gray-600 active:scale-95 transition-all text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                className="flex-none bg-gray-500 hover:bg-gray-600 active:scale-95 transition-all text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500
+                           dark:bg-neutral-600 dark:hover:bg-neutral-500 dark:active:scale-95 dark:text-white dark:focus:ring-neutral-400 dark:focus:ring-offset-neutral-800" // Dark mode cancel button
               >
                 Cancel
               </button>
@@ -428,7 +487,13 @@ const ReviewComponent = ({ productId }) => {
       <div className="space-y-6">
         {filteredReviews.length > 0 ? (
           filteredReviews.map((review) => (
-            <div key={review._id} className="bg-white rounded-lg shadow-sm p-6">
+            <div
+              key={review._id}
+              className="bg-white rounded-lg shadow-sm p-6
+                                            dark:bg-neutral-800 dark:shadow-neutral-900/30"
+            >
+              {" "}
+              {/* Dark mode individual review card */}
               <div className="flex items-center mb-2">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <StarIcon
@@ -436,12 +501,17 @@ const ReviewComponent = ({ productId }) => {
                     className={`h-5 w-5 ${
                       star <= review.rating
                         ? "text-yellow-400"
-                        : "text-gray-300"
+                        : "text-gray-300 dark:text-neutral-600" // Dark mode inactive star color
                     }`}
                   />
                 ))}
               </div>
-              <p className="text-gray-600 text-sm mb-2">
+              <p
+                className="text-gray-600 text-sm mb-2
+                            dark:text-neutral-400"
+              >
+                {" "}
+                {/* Dark mode author/date text */}
                 {/* Check if user_id is populated (object) or just an ID string */}
                 by {review.user_id?.name || "Anonymous"} •{" "}
                 {new Date(review.createdAt || review.date).toLocaleDateString()}
@@ -454,33 +524,44 @@ const ReviewComponent = ({ productId }) => {
                   <div className="flex gap-2 mb-2">
                     <button
                       onClick={() => handleEditClick(review)}
-                      className="text-blue-500 hover:text-blue-700 text-sm"
+                      className="text-blue-500 hover:text-blue-700 text-sm
+                                 dark:text-blue-400 dark:hover:text-blue-300" // Dark mode edit button
                       disabled={loading} // Disable if any operation is in progress
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDeleteClick(review._id)}
-                      className="text-red-500 hover:text-red-700 text-sm"
+                      className="text-red-500 hover:text-red-700 text-sm
+                                 dark:text-red-400 dark:hover:text-red-300" // Dark mode delete button
                       disabled={loading} // Disable if any operation is in progress
                     >
                       Delete
                     </button>
                   </div>
                 )}
-
-              <p className="mt-3 text-gray-700">{review.content}</p>
-              <div className="mt-4 flex items-center text-sm text-gray-500">
+              <p className="mt-3 text-gray-700 dark:text-neutral-200">
+                {review.content}
+              </p>{" "}
+              {/* Dark mode review content */}
+              <div
+                className="mt-4 flex items-center text-sm text-gray-500
+                              dark:text-neutral-400"
+              >
+                {" "}
+                {/* Dark mode helpfulness text */}
                 <button
                   onClick={() => handleVote(review._id, true)}
-                  className="flex items-center mr-4 hover:text-blue-600"
+                  className="flex items-center mr-4 hover:text-blue-600
+                             dark:hover:text-blue-400" // Dark mode helpfulness hover
                 >
                   <ThumbUpIcon className="h-4 w-4 mr-1" />
                   Helpful ({review.helpfulCount || 0})
                 </button>
                 <button
                   onClick={() => handleVote(review._id, false)}
-                  className="flex items-center hover:text-blue-600"
+                  className="flex items-center hover:text-blue-600
+                             dark:hover:text-blue-400" // Dark mode helpfulness hover
                 >
                   <ThumbDownIcon className="h-4 w-4 mr-1" />
                   Not Helpful ({review.notHelpfulCount || 0})
@@ -489,8 +570,15 @@ const ReviewComponent = ({ productId }) => {
             </div>
           ))
         ) : (
-          <div className="bg-white rounded-lg shadow-sm p-6 text-center py-12">
-            <p className="text-gray-500">
+          <div
+            className="bg-white rounded-lg shadow-sm p-6 text-center py-12
+                          dark:bg-neutral-800 dark:shadow-neutral-900/30"
+          >
+            {" "}
+            {/* Dark mode no reviews card */}
+            <p className="text-gray-500 dark:text-neutral-400">
+              {" "}
+              {/* Dark mode no reviews text */}
               Be the first to review this product!
             </p>
           </div>

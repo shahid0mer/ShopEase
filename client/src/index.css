@@ -46,6 +46,23 @@
     --space-4xl: 4rem;
   }
 
+  .dark {
+    /* This '.dark' class is what your React components will toggle on document.documentElement */
+    --primary: #0d9488; /* Slightly different primary for dark */
+    --primary-dark: #0f766e;
+    --primary-light: #064e3b;
+
+    --secondary: #b45309;
+    --secondary-dark: #7c2d12;
+    --secondary-light: #fcd34d;
+
+    --neutral-50: #1a202c; /* Dark background */
+    --neutral-200: #2d3748; /* Darker gray */
+    --neutral-500: #a0aec0; /* Lighter gray for text */
+    --neutral-700: #cbd5e0; /* Even lighter gray for text */
+    --neutral-800: #f7fafc; /* Nearly white for very dark contrast */
+  }
+
   *,
   ::before,
   ::after {
@@ -54,6 +71,7 @@
   body {
     @apply font-inter;
     background-color: var(--neutral-50);
+    color: var(--neutral-800);
   }
 }
 
@@ -62,3 +80,5 @@
   --font-montserrat: "Montserrat", sans-serif;
   --neutral-50: #f8fafc;
 }
+
+@custom-variant dark (&:where(.dark, .dark *));

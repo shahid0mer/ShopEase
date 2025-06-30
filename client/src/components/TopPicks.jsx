@@ -11,13 +11,13 @@ const TopPicks = () => {
         "Explore our most-loved products, handpicked by our community and
         trending this week."
       </p>
-      <div className="flex flex-col md:flex-row justify-center items-center gap-6 overflow-x-auto py-4">
+      <div className="flex flex-col md:flex-row justify-center items-center gap-6 overflow-x-auto py-4 ">
         {[1, 2, 3].map((item) => (
           <div
             key={item}
-            className="flex justify-center mt-[var(--space-4xl)] min-w-[300px] sm:min-w-[350px] md:w-[400px]"
+            className="flex justify-center mt-[var(--space-4xl)] min-w-[300px] sm:min-w-[350px] md:w-[400px] dark:bg-neutral-800"
           >
-            <div className="flex-col w-full max-w-[400px] h-auto p-3 hover:translate-y-[-8px] transition-all duration-300 border border-[var(--neutral-200)] shadow-[var(--shadow-md)]">
+            <div className="flex-col w-full max-w-[400px] h-auto p-3 hover:translate-y-[-8px] transition-all duration-300 border border-[var(--neutral-200)] shadow-[var(--shadow-md)] dark:bg-neutral-800">
               <img
                 className="hover:ease-in duration-300 transform transition-all w-full rounded-[var(--radius-lg)] object-contain"
                 src={sample}

@@ -1,3 +1,5 @@
+import { toast } from "sonner";
+
 // src/utils/razorpayHandler.js
 export const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -24,14 +26,14 @@ export const startRazorpayPayment = async ({
   navigate,
 }) => {
   if (!razorpayKeyId) {
-    alert("Razorpay Key ID is not available.");
+    toast.error("Razorpay Key ID is not available.");
     return;
   }
 
   const scriptLoaded = await loadRazorpayScript();
 
   if (!scriptLoaded) {
-    alert("Failed to load Razorpay SDK.");
+    toast.error("Failed to load Razorpay SDK.");
     return;
   }
 
@@ -60,10 +62,10 @@ export const startRazorpayPayment = async ({
         result.meta.requestStatus === "fulfilled" &&
         result.payload?.order?._id
       ) {
-        alert("Payment successful! Order placed.");
+        toast.success("Payment successful! Order placed.");
         navigate(`/account/orders`);
       } else {
-        alert(
+        toast.error(
           `Payment verification failed: ${
             result.payload?.message || JSON.stringify(result.payload)
           }`
@@ -87,7 +89,9 @@ export const startRazorpayPayment = async ({
   const paymentObject = new window.Razorpay(options);
 
   paymentObject.on("payment.failed", function (response) {
-    alert(`Payment Failed: ${response.error.description || "Unknown error"}`);
+    toast.error(
+      `Payment Failed: ${response.error.description || "Unknown error"}`
+    );
   });
 
   paymentObject.open();

@@ -11,6 +11,7 @@ import { getAddresses } from "../Features/User/addressSlice.js";
 import axios from "axios";
 import { RAZOR_KEY } from "../utils/config.js";
 import { startRazorpayPayment } from "../utils/razorpayHandler";
+import { toast } from "sonner";
 
 const Checkout = () => {
   const [showAddress, setShowAddress] = useState(false);
@@ -29,7 +30,7 @@ const Checkout = () => {
   const { loading: orderLoading, error: orderError } = useSelector(
     (state) => state.order
   );
-  
+
   const {
     addresses,
     defaultAddress,
@@ -48,10 +49,12 @@ const Checkout = () => {
         if (response.data?.key_id) {
           setRazorpayKeyId(response.data.key_id);
         } else {
-          alert("Failed to load payment configuration. Please try again.");
+          toast.error(
+            "Failed to load payment configuration. Please try again."
+          );
         }
       } catch (error) {
-        alert("Error fetching payment configuration. Please try again.");
+        toast.error("Error fetching payment configuration. Please try again.");
       }
     };
 
@@ -95,12 +98,12 @@ const Checkout = () => {
 
   const handlePlaceOrder = async () => {
     if (!selectedAddress) {
-      alert("Please select a delivery address.");
+      toast.info("Please select a delivery address.");
       return;
     }
 
     if (paymentMethod === "ONLINE" && !razorpayKeyId) {
-      alert("Payment gateway is not ready. Please wait or refresh.");
+      toast.error("Payment gateway is not ready. Please wait or refresh.");
       return;
     }
 
@@ -120,10 +123,10 @@ const Checkout = () => {
       };
       const result = await dispatch(placeOrderCOD(checkoutDataForCOD));
       if (result.meta.requestStatus === "fulfilled" && result.payload.success) {
-        alert("Order placed successfully with COD!");
+        toast.success("Order placed successfully with COD!");
         navigate("/account/orders");
       } else {
-        alert(
+        toast.error(
           "Checkout failed: " + (result.payload?.message || "Unknown error")
         );
       }
@@ -151,21 +154,25 @@ const Checkout = () => {
       } else if (result.payload?.order) {
         navigate(`/account/orders`);
       } else {
-        alert("Online checkout failed. Please try again.");
+        toast.error("Online checkout failed. Please try again.");
       }
     }
   };
 
-  if (
-    addressLoading ||
-    (paymentMethod === "ONLINE" && razorpayKeyId === null)
-  ) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <div className="text-lg">Loading checkout information...</div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (
+      addressLoading ||
+      (paymentMethod === "ONLINE" && razorpayKeyId === null)
+    ) {
+      const loadingToast = toast.loading("Loading checkout information...", {
+        duration: Infinity,
+      });
+
+      return () => {
+        toast.dismiss(loadingToast);
+      };
+    }
+  }, [addressLoading, paymentMethod, razorpayKeyId]);
 
   return (
     <div className="flex flex-col md:flex-row py-16 max-w-6xl w-full px-6 mx-auto ">

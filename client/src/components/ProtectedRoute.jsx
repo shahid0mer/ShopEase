@@ -1,7 +1,8 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
-import { shopEaseToast } from "../utils/shopEaseToast";
+
+import { toast } from "sonner";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, isAuthenticated, loading } = useSelector((state) => state.auth);
@@ -9,7 +10,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   if (loading) return <p>Loading...</p>;
 
   if (!isAuthenticated) {
-    shopEaseToast.error("pls login");
+    toast.error("please login");
     return <Navigate to="/" />;
   }
 

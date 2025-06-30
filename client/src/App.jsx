@@ -6,7 +6,7 @@ import SellerHome from "./pages/SellerHome";
 import AddProduct from "./components/AddProduct";
 import SellerDashboardLayout from "./Layouts/SellerDashboardLayout";
 import { checkAuthStatus, getUserProfile } from "./Features/User/authSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import ProtectedRoute from "./components/ProtectedRoute";
 import RootLayout from "./Layouts/RootLayout";
 import ProductDetails from "./pages/ProductDetails";
@@ -20,8 +20,19 @@ import ProfileForm from "./components/ProfileForm";
 import AddressForm from "./components/AddressForm";
 import Checkout from "./components/Checkout";
 import Orders from "./components/Orders";
+import { selectDarkMode } from "./Features/DarkMode/darkModeSlice";
+import AdminDashboard from "./components/AdminDashboard";
+import AdminLayout from "./Layouts/AdminLayout";
+import AdminLogin from "./components/AdminLogin";
+import Admin from "./pages/Admin";
+import AdminCarouselManager from "./components/AdminCarouselManager";
+import AdminUserManagement from "./components/AdminUserManagement";
+import AdminAuthWrapper from "./components/AdminAuthWrapper";
+// import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 
 const App = () => {
+  const darkMode = useSelector(selectDarkMode);
+
   const pageVariants = {
     initial: {
       opacity: 0,
@@ -175,6 +186,49 @@ const App = () => {
               <Route path="orders" element={<Orders />} />
             </Route>
           </Route>
+
+          <Route
+            path="/adminlogin"
+            element={
+              <PageWrapper>
+                <AdminLogin />
+              </PageWrapper>
+            }
+          />
+
+          <Route
+            path="/admin"
+            element={
+              <AdminAuthWrapper>
+                <AdminLayout />
+              </AdminAuthWrapper>
+            }
+          >
+            <Route
+              path="dashboard"
+              element={
+                <PageWrapper>
+                  <Admin />
+                </PageWrapper>
+              }
+            />
+            <Route
+              path="carousal"
+              element={
+                <PageWrapper>
+                  <AdminCarouselManager />
+                </PageWrapper>
+              }
+            />
+            <Route
+              path="users"
+              element={
+                <PageWrapper>
+                  <AdminUserManagement />
+                </PageWrapper>
+              }
+            />
+          </Route>
         </Routes>
       </AnimatePresence>
     );
@@ -184,7 +238,7 @@ const App = () => {
     <AuthWrapper>
       <main>
         <AnimatedRoutes />
-        <Toaster position="bottom-right" />
+        <Toaster richColors position="top-center" />
       </main>
     </AuthWrapper>
   );

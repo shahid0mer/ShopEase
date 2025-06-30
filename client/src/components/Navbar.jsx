@@ -17,6 +17,8 @@ import {
   FiLogOut,
 } from "react-icons/fi";
 import { fetchProductsWithFilters } from "../Features/Product/productSlice";
+import DarkModeToggle from "./DarkModeToggle";
+import { toast } from "sonner";
 
 const Navbar = ({ onLoginClick }) => {
   const navigate = useNavigate();
@@ -27,13 +29,11 @@ const Navbar = ({ onLoginClick }) => {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const profileMenuRef = useRef(null);
-  const [keyword, setKeyword] = useState("");
 
   const isSellerPage = location.pathname.startsWith("/seller");
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const isSeller = user?.role?.trim() === "seller";
 
-  // Close profile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -57,14 +57,18 @@ const Navbar = ({ onLoginClick }) => {
       navigate("/");
       setMobileMenuOpen(false);
       setProfileMenuOpen(false);
+      toast.success("Logged out successfully!");
     } catch (error) {
-      console.error("Logout failed:", error);
       try {
         await persistor.purge();
       } catch (purgeError) {
-        console.error("Purge failed:", purgeError);
+        console.error(
+          "Error purging persistor after logout error:",
+          purgeError
+        );
       }
       navigate("/");
+      toast.error("Logout failed. Please try again.");
     }
   };
 
@@ -74,7 +78,6 @@ const Navbar = ({ onLoginClick }) => {
 
   return (
     <div className="flex px-4 md:px-7 h-16 items-center justify-between bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-dark)_100%)] tracking-tight font-[1.75rem] sticky top-0 z-50 w-full">
-      {/* Mobile Menu Button */}
       <button
         className="md:hidden text-white"
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -82,7 +85,6 @@ const Navbar = ({ onLoginClick }) => {
         {mobileMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
       </button>
 
-      {/* Logo */}
       <div
         className="logo group flex items-center gap-2 transition-transform duration-300 ease-in-out hover:-translate-y-0.5 cursor-pointer"
         onClick={() => navigate("/")}
@@ -133,23 +135,39 @@ const Navbar = ({ onLoginClick }) => {
         </span>
       </div>
 
-      {/* Search Input - Desktop */}
       <div className="hidden md:flex mx-4 flex-1 min-w-[200px] max-w-2xl">
-        <div className="flex items-center border pl-4 gap-2 bg-white border-gray-500/30 h-[46px] rounded-full overflow-hidden w-full">
+        <div className="flex items-center border pl-4 gap-2 bg-white dark:bg-[var(--neutral-700)] border-gray-500/30 dark:border-[var(--neutral-500)] h-[46px] rounded-full overflow-hidden w-full">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width={30}
             height={30}
             viewBox="0 0 30 30"
             fill="#6B7280"
+            className="dark:fill-[var(--neutral-300)]"
           >
             <path d="M13 3C7.489 3 3 7.489 3 13s4.489 10 10 10a9.95 9.95 0 0 0 6.322-2.264l5.971 5.971a1 1 0 1 0 1.414-1.414l-5.97-5.97A9.95 9.95 0 0 0 23 13c0-5.511-4.489-10-10-10m0 2c4.43 0 8 3.57 8 8s-3.57 8-8 8-8-3.57-8-8 3.57-8 8-8" />
           </svg>
           <input
             type="search"
-            className="w-full h-full outline-none text-[1.15rem] text-[var(--neutral-800)]"
+            className="w-full h-full outline-none text-[1.15rem] text-[var(--neutral-800)] dark:text-[var(--neutral-50)] bg-transparent"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === "Enter") {
+                const trimmed = searchQuery.trim();
+                if (trimmed) {
+                  dispatch(
+                    fetchProductsWithFilters({
+                      keyword: trimmed,
+                      page: 1,
+                      limit: 20,
+                      sort: "",
+                    })
+                  );
+                  navigate(`/results?keyword=${encodeURIComponent(trimmed)}`);
+                }
+              }
+            }}
           />
           <button
             type="submit"
@@ -161,8 +179,8 @@ const Navbar = ({ onLoginClick }) => {
                   fetchProductsWithFilters({
                     keyword: trimmed,
                     page: 1,
-                    limit: 20, // or whatever default
-                    sort: "", // optional
+                    limit: 20,
+                    sort: "",
                   })
                 );
                 navigate(`/results?keyword=${encodeURIComponent(trimmed)}`);
@@ -174,9 +192,7 @@ const Navbar = ({ onLoginClick }) => {
         </div>
       </div>
 
-      {/* Desktop Navigation */}
       <div className="hidden md:flex items-center gap-4 lg:gap-8">
-        {/* Conditional Buttons */}
         {isAuthenticated ? (
           <>
             {user?.role?.trim() === "user" && (
@@ -198,10 +214,14 @@ const Navbar = ({ onLoginClick }) => {
                     );
 
                     if (updatedProfile?.role?.trim() === "seller") {
+                      toast.success("You are now a seller!");
                       navigate("/seller");
                     }
                   } catch (error) {
                     console.error("Upgrade failed:", error);
+                    toast.error(
+                      "Failed to upgrade to seller. Please try again."
+                    );
                   }
                 }}
               >
@@ -224,18 +244,17 @@ const Navbar = ({ onLoginClick }) => {
                 </Link>
               ))}
 
-            {/* Profile Dropdown */}
             <div className="relative" ref={profileMenuRef}>
               <button
-                className="bg-[#ffffffb3] rounded-full w-[40px] h-[40px] flex justify-center items-center hover:bg-white/20 transition-colors duration-200"
+                className="bg-[#ffffffb3] dark:bg-[var(--neutral-700)] rounded-full w-[40px] h-[40px] flex justify-center items-center hover:bg-white/20 dark:hover:bg-[var(--neutral-600)] transition-colors duration-200"
                 onClick={() => setProfileMenuOpen(!profileMenuOpen)}
               >
                 {user?.email ? (
-                  <p className="text-[var(--neutral-800)] text-[1.5rem] font-medium text-center font-montserrat">
+                  <p className="text-[var(--neutral-800)] dark:text-[var(--neutral-50)] text-[1.5rem] font-medium text-center font-montserrat">
                     {user.email.charAt(0).toUpperCase()}
                   </p>
                 ) : (
-                  <FiUser className="text-[var(--neutral-800)] text-[1.2rem]" />
+                  <FiUser className="text-[var(--neutral-800)] dark:text-[var(--neutral-50)] text-[1.2rem]" />
                 )}
               </button>
 
@@ -246,26 +265,26 @@ const Navbar = ({ onLoginClick }) => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50"
+                    className="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-800 rounded-md shadow-lg py-1 z-50"
                   >
-                    <div className="px-4 py-2 border-b border-gray-100">
-                      <p className="text-sm font-medium text-gray-800">
+                    <div className="px-4 py-2 border-b border-gray-100 dark:border-neutral-700">
+                      <p className="text-sm font-medium text-gray-800 dark:text-neutral-200 truncate">
                         {user?.email}
                       </p>
                     </div>
                     <Link
                       to="/account"
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-neutral-300 dark:hover:bg-neutral-700"
                       onClick={() => setProfileMenuOpen(false)}
                     >
-                      <FiSettings className="mr-2" />
+                      <FiSettings className="mr-2 text-gray-600 dark:text-neutral-400" />
                       Account Settings
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-neutral-300 dark:hover:bg-neutral-700"
                     >
-                      <FiLogOut className="mr-2" />
+                      <FiLogOut className="mr-2 text-gray-600 dark:text-neutral-400" />
                       Logout
                     </button>
                   </motion.div>
@@ -282,12 +301,14 @@ const Navbar = ({ onLoginClick }) => {
           </button>
         )}
 
-        {/* Cart - hide only on seller pages */}
-        {!isSellerPage && (
+        <DarkModeToggle />
+
+        {isSellerPage ? (
+          <div className="w-10 h-10 px-[var(--space-md)] py-[var(--space-sm)]"></div>
+        ) : (
           <Link to="/cart">
             <button className="font-medium text-[0.95rem] text-white/90 px-[var(--space-md)] py-[var(--space-sm)] transition-all duration-200 backdrop-blur-sm active:scale-110">
               <div className="relative w-10 h-10">
-                {/* Cart Icon (SVG) */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -295,6 +316,7 @@ const Navbar = ({ onLoginClick }) => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   stroke="#000000"
+                  className="dark:stroke-white"
                   id="Cart--Streamline-Mynaui"
                   height="32"
                   width="32"
@@ -306,18 +328,24 @@ const Navbar = ({ onLoginClick }) => {
                   ></path>
                 </svg>
 
-                {/* Notification Badge */}
                 <AnimatePresence>
-                  <motion.div
-                    key={cartItemCount}
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full shadow-md"
-                  >
-                    {cartItemCount}
-                  </motion.div>
+                  {/* Corrected conditional rendering syntax here */}
+                  {cartItemCount > 0 && (
+                    <motion.div
+                      key={cartItemCount}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      exit={{ scale: 0 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 20,
+                      }}
+                      className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full shadow-md"
+                    >
+                      {cartItemCount}
+                    </motion.div>
+                  )}
                 </AnimatePresence>
               </div>
             </button>
@@ -325,10 +353,11 @@ const Navbar = ({ onLoginClick }) => {
         )}
       </div>
 
-      {/* Mobile Cart Icon */}
-      {!isSellerPage && (
-        <Link to="/cart" className="md:hidden relative ml-4">
-          <div className="relative w-10 h-10">
+      {isSellerPage ? (
+        <div className="md:hidden w-10 h-10 ml-4 sm:ml-6"></div>
+      ) : (
+        <Link to="/cart" className="md:hidden ml-4 sm:ml-6">
+          <div className="relative w-10 h-10 ">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -346,16 +375,25 @@ const Navbar = ({ onLoginClick }) => {
                 strokeWidth="2"
               ></path>
             </svg>
-            {cartItemCount > 0 && (
-              <div className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full shadow-md">
-                {cartItemCount}
-              </div>
-            )}
+            <AnimatePresence>
+              {/* Corrected conditional rendering syntax here */}
+              {cartItemCount > 0 && (
+                <motion.div
+                  key={cartItemCount}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full shadow-md"
+                >
+                  {cartItemCount}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </Link>
       )}
 
-      {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden absolute top-16 left-0 right-0 bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-dark)_100%)] p-4 shadow-lg z-40">
           <div className="relative mb-4">
@@ -366,14 +404,31 @@ const Navbar = ({ onLoginClick }) => {
               className="w-full pl-10 pr-4 py-2 bg-white/20 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-white/30"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === "Enter") {
+                  const trimmed = searchQuery.trim();
+                  if (trimmed) {
+                    dispatch(
+                      fetchProductsWithFilters({
+                        keyword: trimmed,
+                        page: 1,
+                        limit: 20,
+                        sort: "",
+                      })
+                    );
+                    navigate(`/results?keyword=${encodeURIComponent(trimmed)}`);
+                    setMobileMenuOpen(false);
+                  }
+                }
+              }}
             />
           </div>
 
           <div className="flex flex-col space-y-3">
             {isAuthenticated && (
               <div className="flex items-center space-x-3 text-white">
-                <div className="bg-[#ffffffb3] rounded-full w-8 h-8 flex justify-center items-center">
-                  <p className="text-[var(--neutral-800)] text-sm font-medium">
+                <div className="bg-[#ffffffb3] dark:bg-[var(--neutral-700)] rounded-full w-8 h-8 flex justify-center items-center">
+                  <p className="text-[var(--neutral-800)] dark:text-[var(--neutral-50)] text-sm font-medium">
                     {user?.email ? user.email.charAt(0).toUpperCase() : ""}
                   </p>
                 </div>
@@ -393,11 +448,14 @@ const Navbar = ({ onLoginClick }) => {
                           getUserProfile()
                         ).unwrap();
                         if (updatedProfile?.role?.trim() === "seller") {
+                          toast.success("You are now a seller!");
                           navigate("/seller");
                           setMobileMenuOpen(false);
                         }
                       } catch (error) {
-                        console.error("Upgrade failed:", error);
+                        toast.error(
+                          "Failed to upgrade to seller. Please try again."
+                        );
                       }
                     }}
                   >
@@ -447,6 +505,9 @@ const Navbar = ({ onLoginClick }) => {
                 Login
               </button>
             )}
+            <div className="flex justify-center mb-4">
+              <DarkModeToggle />
+            </div>
           </div>
         </div>
       )}
