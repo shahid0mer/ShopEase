@@ -5,7 +5,7 @@ import {
   registerUser,
   getUserProfile,
 } from "../Features/User/authSlice";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { shopEaseToast } from "../utils/shopEaseToast";
 import { toast } from "sonner";
@@ -264,14 +264,16 @@ const Login = ({ onClose }) => {
                   className="mb-4 sm:mb-6 bg-[var(--neutral-50)] placeholder-[var(--neutral-500)] w-full pl-4 pr-4 py-2 sm:py-[var(--space-md)] rounded-[var(--space-lg)] border-2 border-[var(--neutral-200)] text-[0.875rem] sm:text-[1rem] focus:outline-none focus:border-[var(--primary)] focus:bg-white focus:shadow-[0_0_0_3px_rgba(16,185,129,0.1)] transition-all
                                    dark:bg-[var(--neutral-200)] dark:placeholder-[var(--neutral-500)] dark:border-[var(--neutral-200)] dark:text-[var(--neutral-700)] dark:focus:border-[var(--primary-light)] dark:focus:bg-[var(--neutral-200)] dark:focus:shadow-[0_0_0_3px_rgba(13,148,136,0.2)]"
                 />
-                {/* Conditional rendering for Forgot Password button */}
+
                 {isSignIn && (
-                  <button
-                    className="text-sm hover:text-[var(--primary)] cursor-pointer active:scale-95 transition-all mb-4" // Added mb-4 for spacing
-                    type="button" // Important: set type="button" to prevent form submission
-                  >
-                    Forgot Password? Click Here
-                  </button>
+                  <Link to="forgotpassword">
+                    <button
+                      className="text-sm hover:text-[var(--primary)] cursor-pointer active:scale-95 transition-all mb-4" // Added mb-4 for spacing
+                      type="button"
+                    >
+                      Forgot Password? Click Here
+                    </button>
+                  </Link>
                 )}
                 {!isSignIn && (
                   <>

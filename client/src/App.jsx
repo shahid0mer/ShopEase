@@ -28,7 +28,10 @@ import Admin from "./pages/Admin";
 import AdminCarouselManager from "./components/AdminCarouselManager";
 import AdminUserManagement from "./components/AdminUserManagement";
 import AdminAuthWrapper from "./components/AdminAuthWrapper";
-// import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import AdminOrders from "./components/AdminOrders";
+import SellerOrders from "./components/SellerOrders";
 
 const App = () => {
   const darkMode = useSelector(selectDarkMode);
@@ -169,6 +172,14 @@ const App = () => {
                   </PageWrapper>
                 }
               />
+              <Route
+                path="orders"
+                element={
+                  <PageWrapper>
+                    <SellerOrders />
+                  </PageWrapper>
+                }
+              />
             </Route>
             <Route
               path="account"
@@ -185,6 +196,15 @@ const App = () => {
               <Route path="editaddress" element={<AddressForm />} />
               <Route path="orders" element={<Orders />} />
             </Route>
+            <Route
+              path="/forgotpassword"
+              element={
+                <PageWrapper>
+                  <ForgotPassword />
+                </PageWrapper>
+              }
+            />
+            <Route path="/reset-password" element={<ResetPassword />} />
           </Route>
 
           <Route
@@ -228,6 +248,14 @@ const App = () => {
                 </PageWrapper>
               }
             />
+            <Route
+              path="orders"
+              element={
+                <PageWrapper>
+                  <AdminOrders />
+                </PageWrapper>
+              }
+            />
           </Route>
         </Routes>
       </AnimatePresence>
@@ -238,7 +266,7 @@ const App = () => {
     <AuthWrapper>
       <main>
         <AnimatedRoutes />
-        <Toaster richColors position="top-center" />
+        <Toaster richColors position="top-center" expand={true} />
       </main>
     </AuthWrapper>
   );

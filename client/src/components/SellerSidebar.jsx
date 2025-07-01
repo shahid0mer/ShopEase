@@ -13,7 +13,6 @@ const SellerSidebar = ({ isOpen, onClose }) => {
 
   return (
     <>
-      
       {isOpen && (
         <div
           className="lg:hidden fixed inset-0 backdrop-blur-sm  bg-opacity-50 z-20"
@@ -21,7 +20,6 @@ const SellerSidebar = ({ isOpen, onClose }) => {
         />
       )}
 
-      
       <div
         className={`
         w-64 mt-14 bg-white dark:bg-neutral-900 h-screen fixed left-0 top-16 lg:top-0 shadow-md border-r border-gray-100 dark:border-neutral-800 z-30
@@ -71,7 +69,7 @@ const SellerSidebar = ({ isOpen, onClose }) => {
                   to={item.path}
                   onClick={() => {
                     setActiveItem(item.path);
-                    onClose(); // Close sidebar on mobile after navigation
+                    onClose();
                   }}
                   className={`flex items-center px-4 py-3 rounded-lg transition-colors ${
                     activeItem === item.path

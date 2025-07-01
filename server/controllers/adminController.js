@@ -3,7 +3,7 @@ import Order from "../models/Order.js";
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 
-//Adminlogin :  /api/admin/login
+// Admin Login: POST /api/admin/login
 export const adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -39,7 +39,7 @@ export const adminLogin = async (req, res) => {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Admin logged in successfully",
       user: {
@@ -51,11 +51,11 @@ export const adminLogin = async (req, res) => {
     });
   } catch (error) {
     console.error("Login error:", error.message);
-    res.status(500).json({ success: false, message: "Server error" });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-//Adminauth :  /api/admin/is-auth
+// Admin Auth: GET /api/admin/is-auth
 export const isAdminAuth = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
@@ -74,7 +74,7 @@ export const isAdminAuth = async (req, res) => {
   }
 };
 
-//AdminLogout :  /api/admin/logout
+// Admin Logout: GET /api/admin/logout
 export const adminLogout = async (req, res) => {
   try {
     res.clearCookie("token", {
@@ -90,7 +90,7 @@ export const adminLogout = async (req, res) => {
   }
 };
 
-// viewall orders : /api/admin/viewall
+// View All Orders: GET /api/admin/viewall
 export const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find({
@@ -110,44 +110,41 @@ export const getAllOrders = async (req, res) => {
   }
 };
 
-// GET /api/admin/users - Get all users
+// Get All Users: GET /api/admin/users
 export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find().select("-password");
-    res.status(200).json({ success: true, users });
+    return res.status(200).json({ success: true, users });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    return res.status(500).json({ success: false, message: err.message });
   }
 };
 
-// DELETE /api/admin/users/:id - Delete user by ID
+// Delete User by ID: DELETE /api/admin/users/:id
 export const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
 
     const user = await User.findByIdAndDelete(id);
-
     if (!user) {
       return res
         .status(404)
         .json({ success: false, message: "User not found" });
     }
 
-    res
+    return res
       .status(200)
       .json({ success: true, message: "User deleted successfully" });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    return res.status(500).json({ success: false, message: err.message });
   }
 };
 
-//  PUT /api/admin/user/:id/role
-
+// Update User Role: PUT /api/admin/user/:id/role
 export const updateUserRole = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // 1. Find the user
     const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({

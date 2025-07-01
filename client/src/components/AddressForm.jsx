@@ -388,25 +388,6 @@ const AddressForm = () => {
               </div>
             </div>
 
-            <div className="flex items-start sm:items-center">
-              <input
-                type="checkbox"
-                name="isDefault"
-                checked={address.isDefault}
-                onChange={handleChange}
-                id="defaultAddress"
-                className="h-4 w-4 mt-0.5 sm:mt-0 text-emerald-600 focus:ring-[var(--primary)] border-gray-300 rounded
-                           dark:text-[var(--primary-dark)] dark:focus:ring-[var(--primary)] dark:border-[var(--neutral-500)] dark:checked:bg-[var(--primary-dark)]"
-              />
-              <label
-                htmlFor="defaultAddress"
-                className="ml-2 block text-xs sm:text-sm text-gray-700 leading-tight sm:leading-normal
-                           dark:text-[var(--neutral-500)]"
-              >
-                Set as default shipping address
-              </label>
-            </div>
-
             <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-3 sm:pt-4">
               <button
                 type="button"

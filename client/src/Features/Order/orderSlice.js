@@ -9,6 +9,8 @@ import {
   BASE_URL,
   CART_CHECKOUT,
   VER_CART,
+  GET_ALLORDERS,
+  SELLER_ORDERS,
 } from "../../utils/config";
 
 // 1. Create Order
@@ -118,9 +120,6 @@ export const singleProductCheckout = createAsyncThunk(
         }
       }
 
-      // For COD, just return the data received from backend which should contain the order
-      // Assuming COD response.data is the full order object or contains it.
-      // If it's just a success message, you might need to adjust based on actual COD response.
       return response.data;
     } catch (err) {
       if (err.response) {
@@ -283,6 +282,39 @@ export const cancelOrderById = createAsyncThunk(
     }
   }
 );
+
+export const fetchAllOrdersAdmin = createAsyncThunk(
+  "order/fetchAllOrdersAdmin",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await axios.get(GET_ALLORDERS, {
+        withCredentials: true,
+      });
+      return res.data.orders;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch admin orders"
+      );
+    }
+  }
+);
+
+export const fetchSellerOrders = createAsyncThunk(
+  "order/fetchSellerOrders",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await axios.get(SELLER_ORDERS, {
+        withCredentials: true,
+      });
+      return res.data.orders;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch seller orders"
+      );
+    }
+  }
+);
+
 const orderSlice = createSlice({
   name: "order",
   initialState: {
@@ -293,6 +325,8 @@ const orderSlice = createSlice({
     success: false,
     requiresPayment: false,
     userOrders: [],
+    adminOrders: [],
+    sellerOrders: [],
   },
   reducers: {
     clearOrderState: (state) => {
@@ -395,6 +429,30 @@ const orderSlice = createSlice({
       .addCase(placeCartOrder.rejected, (state, action) => {
         state.orderStatus = "failed";
         state.orderError = action.payload;
+      })
+      .addCase(fetchAllOrdersAdmin.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAllOrdersAdmin.fulfilled, (state, action) => {
+        state.loading = false;
+        state.adminOrders = action.payload;
+      })
+      .addCase(fetchAllOrdersAdmin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(fetchSellerOrders.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchSellerOrders.fulfilled, (state, action) => {
+        state.loading = false;
+        state.sellerOrders = action.payload;
+      })
+      .addCase(fetchSellerOrders.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });

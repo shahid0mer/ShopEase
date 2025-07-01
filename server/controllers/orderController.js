@@ -5,6 +5,7 @@ import razorpay from "../configs/razorpay.js";
 import crypto from "crypto";
 import Payment from "../models/Payment.js";
 import Cart from "../models/Cart.js";
+
 // Create order - online payment : /api/order/create
 export const createOrder = async (req, res) => {
   try {
@@ -12,7 +13,7 @@ export const createOrder = async (req, res) => {
     const { items, address, payment_id, paymentType } = req.body;
 
     if (!address || !items || items.length === 0) {
-      return res.json({ success: false, message: "Invalid data" });
+      return res.status(400).json({ success: false, message: "Invalid data" });
     }
 
     let amount = await items.reduce(async (total, item) => {
@@ -37,7 +38,7 @@ export const createOrder = async (req, res) => {
         return {
           product_id: item.product,
           quantity: item.quantity,
-          seller_id: product.seller_id, // include seller_id from DB
+          seller_id: product.seller_id,
         };
       })
     );
@@ -52,7 +53,7 @@ export const createOrder = async (req, res) => {
       ispaid: paymentType === "ONLINE" ? true : false,
     });
 
-    res.json({
+    res.status(201).json({
       success: true,
       message: "Order created successfully",
       order_id: order._id,
@@ -60,7 +61,7 @@ export const createOrder = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -75,19 +76,48 @@ export const getUserOrder = async (req, res) => {
     })
       .populate({
         path: "products.product_id",
-
         select: "name price offerPrice images",
       })
       .populate("shippingAddress")
       .sort({ createdAt: -1 });
 
-    res.json({
+    res.status(200).json({
       success: true,
       orders,
     });
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Get all orders for the seller : /api/order/seller
+export const getSellerOrders = async (req, res) => {
+  try {
+    const sellerId = req.user._id;
+
+    const orders = await Order.find({
+      "products.seller_id": sellerId,
+    })
+      .populate("user_id", "name email")
+      .populate("shippingAddress")
+      .populate({
+        path: "products.product_id",
+        select: "name price offerPrice images",
+      })
+      .sort({ createdAt: -1 });
+
+    const filteredOrders = orders.map((order) => {
+      const filteredProducts = order.products.filter((p) =>
+        p.seller_id.equals(sellerId)
+      );
+      return { ...order.toObject(), products: filteredProducts };
+    });
+
+    res.status(200).json({ success: true, orders: filteredOrders });
+  } catch (err) {
+    console.error("Error fetching seller orders:", err.message);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -105,16 +135,45 @@ export const getOrderById = async (req, res) => {
       .populate("shippingAddress");
 
     if (!order) {
-      return res.json({ success: false, message: "Order not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
     }
 
-    res.json({
+    res.status(200).json({
       success: true,
       order,
     });
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Get all orders for admin : /api/order/admin/all
+export const adminGetAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate({
+        path: "user_id",
+        select: "name email",
+      })
+      .populate({
+        path: "products.product_id",
+        select: "name price offerPrice images",
+      })
+      .populate({
+        path: "shippingAddress",
+      })
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      orders,
+    });
+  } catch (error) {
+    console.error("Admin Get All Orders Error:", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -135,7 +194,7 @@ export const trackOrder = async (req, res) => {
         .json({ success: false, message: "Order not found" });
     }
 
-    res.json({
+    res.status(200).json({
       success: true,
       tracking: {
         order_id: order._id,
@@ -157,11 +216,12 @@ export const cancelOrder = async (req, res) => {
   try {
     const { order_id } = req.params;
     const user_id = req.user._id;
+    const role = req.user.role;
 
-    const order = await Order.findOne({
-      _id: order_id,
-      user_id,
-    });
+    const query =
+      role === "admin" ? { _id: order_id } : { _id: order_id, user_id };
+
+    const order = await Order.findOne(query);
 
     if (!order) {
       return res
@@ -169,12 +229,11 @@ export const cancelOrder = async (req, res) => {
         .json({ success: false, message: "Order not found" });
     }
 
-    console.log("Order status:", order.status);
-
     if (order.status === "Delivered" || order.status === "Cancelled") {
-      return res.json({
+      return res.status(400).json({
         success: false,
-        message: "Order cannot be cancelled",
+        message:
+          "Order cannot be cancelled as it's already delivered or cancelled.",
       });
     }
 
@@ -182,7 +241,7 @@ export const cancelOrder = async (req, res) => {
     order.cancelledAt = new Date();
     await order.save();
 
-    res.json({
+    res.status(200).json({
       success: true,
       message: "Order cancelled successfully",
     });
@@ -196,12 +255,9 @@ export const cancelOrder = async (req, res) => {
 export const placeOrderCOD = async (req, res) => {
   try {
     const user_id = req.user._id;
-    // 'items' will be an array like: [{ product: 'productId1', quantity: 1 }]
-    // 'address' will be the full selected address object from the frontend, including its _id
     const { items, address } = req.body;
 
     if (!address || !address._id || !items || items.length === 0) {
-      // Ensure address._id is present
       return res.status(400).json({
         success: false,
         message: "Invalid order data: Missing address or items.",
@@ -209,55 +265,47 @@ export const placeOrderCOD = async (req, res) => {
     }
 
     let totalAmount = 0;
-    const productsForOrder = []; // This will store product details including seller_id
+    const productsForOrder = [];
 
-    // Iterate through items to calculate total amount and build the products array for the order
     for (const item of items) {
       const product = await Product.findById(item.product);
       if (!product) {
         throw new Error(`Product not found with ID: ${item.product}`);
       }
 
-      // *** CRITICAL FIX: Reference product.seller_id as per your Product schema ***
       if (!product.seller_id) {
-        // Check for the correct field name
         throw new Error(
           `Product (ID: ${item.product}) is missing a seller ID. Cannot place order.`
         );
       }
 
-      // Use offerPrice if available, otherwise price. Ensure it's a number.
       const itemPrice = product.offerPrice || product.price || 0;
       totalAmount += itemPrice * item.quantity;
 
       productsForOrder.push({
         product_id: item.product,
         quantity: item.quantity,
-        seller_id: product.seller_id, // *** Corrected to product.seller_id ***
+        seller_id: product.seller_id,
       });
     }
 
-    // Round to 2 decimal places before tax
     totalAmount = Math.round(totalAmount * 100) / 100;
-    // Add tax and round again
     totalAmount += Math.round(totalAmount * 0.02 * 100) / 100;
-
-    // We do NOT create a new address here.
-    // We assume the 'address' object passed from the frontend (selectedAddress)
-    // already has an '_id' which references an existing address document.
 
     await Order.create({
       user_id,
-      products: productsForOrder, // Use the new array with seller_id
+      products: productsForOrder,
       paymentType: "COD",
-      amount: totalAmount, // Use the calculated total amount
-      shippingAddress: address._id, // Use the _id of the existing selected address
-      status: "Pending", // Set initial status for COD orders
+      amount: totalAmount,
+      shippingAddress: address._id,
+      status: "Pending",
     });
 
-    return res.json({ success: true, message: "Order placed successfully" });
+    return res
+      .status(201)
+      .json({ success: true, message: "Order placed successfully" });
   } catch (error) {
-    console.error("Error placing COD order:", error.message); // Use console.error for errors
+    console.error("Error placing COD order:", error.message);
     return res.status(500).json({
       success: false,
       message: "Failed to place order: " + error.message,
@@ -265,12 +313,12 @@ export const placeOrderCOD = async (req, res) => {
   }
 };
 
+// Checkout single product : /api/order/single-product-checkout
 export const singleProductCheckout = async (req, res) => {
   try {
     const user_id = req.user._id;
     const { productId, quantity, address, paymentType } = req.body;
 
-    // Step 1: Basic request validation
     if (!productId || !quantity || !address || !paymentType) {
       return res.status(400).json({
         success: false,
@@ -279,13 +327,10 @@ export const singleProductCheckout = async (req, res) => {
       });
     }
 
-    // Determine the shippingAddressId:
     let shippingAddressId;
     if (address._id) {
-      // If address object has an _id, it's an existing address. Use its _id directly.
       shippingAddressId = address._id;
     } else {
-      // If no _id, assume it's a new address and create it.
       const { name, phone, addressLine1, city, state, country, pincode } =
         address;
       if (
@@ -317,7 +362,6 @@ export const singleProductCheckout = async (req, res) => {
       shippingAddressId = addressDoc._id;
     }
 
-    // Step 2: Get product and calculate total
     const product = await Product.findById(productId);
     if (!product) {
       return res
@@ -325,7 +369,6 @@ export const singleProductCheckout = async (req, res) => {
         .json({ success: false, message: "Product not found" });
     }
 
-    // Ensure seller_id exists on the product before using it
     if (!product.seller_id) {
       throw new Error(
         `Product (ID: ${productId}) is missing a seller ID. Cannot proceed with order.`
@@ -333,21 +376,18 @@ export const singleProductCheckout = async (req, res) => {
     }
 
     const basePrice = product.offerPrice || product.price || 0;
-    // Calculate amount including 2% tax, rounded to 2 decimal places (in rupees/dollars)
     const amountInCurrency =
       Math.round(basePrice * quantity * 1.02 * 100) / 100;
 
     if (paymentType === "ONLINE") {
-      // --- FIX: Generate a shorter unique receipt ID for Razorpay ---
-      // Using last 8 chars of user_id and last 8 chars of timestamp
       const shortUserId = user_id.toString().slice(-8);
       const shortTimestamp = Date.now().toString().slice(-8);
-      const receiptId = `order_${shortUserId}_${shortTimestamp}`; // Example: order_d2461974_12345678 (approx 25 chars)
+      const receiptId = `order_${shortUserId}_${shortTimestamp}`;
 
       const razorpayOptions = {
-        amount: amountInCurrency * 100, // Razorpay expects amount in paise/cents
-        currency: "INR", // Ensure this matches your Razorpay setup
-        receipt: receiptId, // Use the new, shorter receipt ID
+        amount: amountInCurrency * 100,
+        currency: "INR",
+        receipt: receiptId,
         notes: {
           userId: user_id.toString(),
           productId: productId.toString(),
@@ -359,7 +399,7 @@ export const singleProductCheckout = async (req, res) => {
       try {
         const razorpayOrder = await razorpay.orders.create(razorpayOptions);
 
-        return res.json({
+        return res.status(200).json({
           success: true,
           requiresPayment: true,
           paymentData: {
@@ -371,7 +411,6 @@ export const singleProductCheckout = async (req, res) => {
         });
       } catch (razorpayError) {
         console.error("Razorpay order creation failed:", razorpayError);
-        // Log the full Razorpay error for better debugging
         console.error("Razorpay Error Details:", razorpayError.error);
         return res.status(500).json({
           success: false,
@@ -395,7 +434,7 @@ export const singleProductCheckout = async (req, res) => {
         isPaid: false,
       });
 
-      return res.json({
+      return res.status(201).json({
         success: true,
         requiresPayment: false,
         message: "Order created successfully (COD)",
@@ -415,39 +454,26 @@ export const singleProductCheckout = async (req, res) => {
   }
 };
 
+// Checkout cart : /api/order/cart-checkout
 export const cartCheckout = async (req, res) => {
   try {
-    const userId = req.user._id; // Assuming user is authenticated and req.user is available
+    const userId = req.user._id;
     const { products, shippingAddress, paymentType } = req.body;
 
-    console.log(
-      "🛒 Incoming cart checkout request body (initial) =>",
-      req.body
-    );
-    console.log("User ID:", userId);
-
     if (!shippingAddress || !Array.isArray(products) || products.length === 0) {
-      console.error("Validation Error: Missing address or items in cart.");
       return res.status(400).json({
         success: false,
         message: "Missing delivery address or items in cart.",
       });
     }
 
-    // Fetch actual product data from DB to validate prices and calculate total (server-side calculation)
     let backendSubtotalDollars = 0;
     const populatedItems = [];
 
-    console.log(
-      "--- Initial Backend Product Price Calculation for Razorpay Order Creation ---"
-    );
     for (const item of products) {
       try {
         const product = await Product.findById(item.product_id);
         if (!product) {
-          console.error(
-            `Product Not Found Error: Product with ID ${item.product_id} not found.`
-          );
           return res.status(404).json({
             success: false,
             message: `Product with ID ${item.product_id} not found.`,
@@ -464,43 +490,18 @@ export const cartCheckout = async (req, res) => {
           price: itemPrice,
           seller_id: item.seller_id,
         });
-        console.log(
-          `Product ID: ${item.product_id}, DB Price: $${itemPrice.toFixed(
-            2
-          )}, Qty: ${item.quantity}, Item Total: $${itemTotal.toFixed(2)}`
-        );
       } catch (productFetchError) {
-        console.error(
-          `Error fetching product ${item.product_id}:`,
-          productFetchError
-        );
         return res.status(500).json({
           success: false,
           message: `Error processing product ${item.product_id}.`,
         });
       }
     }
-    console.log(
-      `Calculated Subtotal (before tax, in dollars): $${backendSubtotalDollars.toFixed(
-        2
-      )}`
-    );
 
-    // --- ALIGNED CALCULATION WITH FRONTEND AND VERIFICATION FUNCTION ---
     const subtotalPaiseBackend = Math.round(backendSubtotalDollars * 100);
-    console.log(
-      `Backend Subtotal in Paise (rounded from dollars): ${subtotalPaiseBackend}`
-    );
-
     const taxRate = 0.02;
     const taxPaiseBackend = Math.round(subtotalPaiseBackend * taxRate);
-    console.log(`Backend Tax Rate: ${taxRate * 100}%`);
-    console.log(`Backend Tax in Paise (rounded): ${taxPaiseBackend}`);
-
     const totalAmountInPaise = subtotalPaiseBackend + taxPaiseBackend;
-    console.log(
-      `Backend Calculated Total (in paise) for Razorpay order: ${totalAmountInPaise}`
-    );
 
     if (paymentType === "COD") {
       try {
@@ -517,10 +518,8 @@ export const cartCheckout = async (req, res) => {
           status: "placed",
           isPaid: false,
         });
-        console.log("COD Order Created:", newOrder._id);
 
         await Cart.deleteMany({ user_id: userId });
-        console.log(`Cart cleared for user ${userId}`);
 
         return res.status(201).json({
           success: true,
@@ -541,19 +540,13 @@ export const cartCheckout = async (req, res) => {
         const options = {
           amount: totalAmountInPaise,
           currency: "INR",
-          // --- CHANGED: Shortened receipt to fit Razorpay's 40-character limit ---
-          receipt: `order_${Date.now()}`, // Example: order_1719500000000 (19 characters)
+          receipt: `order_${Date.now()}`,
           notes: {
             userId: userId.toString(),
           },
         };
 
-        console.log(
-          "Attempting to create Razorpay order with options:",
-          options
-        );
         const razorpayOrder = await razorpay.orders.create(options);
-        console.log("Razorpay Order Created:", razorpayOrder);
 
         return res.status(200).json({
           success: true,
@@ -563,7 +556,6 @@ export const cartCheckout = async (req, res) => {
         });
       } catch (razorpayOrderError) {
         console.error("Error creating Razorpay order:", razorpayOrderError);
-        // Check if the error is due to an invalid API key or network issue
         if (
           razorpayOrderError.statusCode === 400 &&
           razorpayOrderError.error?.description
@@ -580,15 +572,12 @@ export const cartCheckout = async (req, res) => {
         });
       }
     } else {
-      console.error("Invalid Payment Type:", paymentType);
       return res
         .status(400)
         .json({ success: false, message: "Invalid payment type provided." });
     }
   } catch (error) {
-    // This is the outer catch block for unexpected errors
     console.error("Critical Cart Checkout Server Error:", error);
-    // More specific error handling for common Mongoose/DB errors
     if (error.name === "ValidationError") {
       return res.status(400).json({
         success: false,
@@ -616,24 +605,15 @@ export const verifyCartPaymentAndCreateOrder = async (req, res) => {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
-      orderDetails, // Includes products, shippingAddress, amount (from frontend)
+      orderDetails,
     } = req.body;
-    const user_id = req.user._id; // Assuming user is authenticated and req.user is available
+    const user_id = req.user._id;
 
-    // --- Debugging step: Log received Razorpay data ---
-    console.log("Received Razorpay data for verification:");
-    console.log("Order ID:", razorpay_order_id);
-    console.log("Payment ID:", razorpay_payment_id);
-    console.log("Received Signature:", razorpay_signature);
-    console.log("Order Details:", JSON.stringify(orderDetails, null, 2));
-
-    // 1. Verify Signature
     const body = razorpay_order_id + "|" + razorpay_payment_id;
 
     const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
 
     if (!RAZORPAY_KEY_SECRET) {
-      console.error("RAZORPAY_KEY_SECRET is not set in environment variables.");
       return res.status(500).json({
         success: false,
         message: "Server configuration error: Razorpay secret key missing.",
@@ -645,42 +625,23 @@ export const verifyCartPaymentAndCreateOrder = async (req, res) => {
       .update(body.toString())
       .digest("hex");
 
-    console.log("Generated Body for Hashing:", body);
-    console.log(
-      "Expected Signature (calculated on backend):",
-      expectedSignature
-    );
-
     if (expectedSignature !== razorpay_signature) {
-      console.error("Signature mismatch detected:");
-      console.error("Expected:", expectedSignature);
-      console.error("Received:", razorpay_signature);
       return res
         .status(400)
         .json({ success: false, message: "Invalid signature" });
     }
 
-    // --- Signature matched, proceed with payment and order processing ---
-
-    // 2. Verify Razorpay payment status and amount (using Razorpay API)
     const paymentDetails = await razorpay.payments.fetch(razorpay_payment_id);
-    console.log(
-      "Fetched Payment Details from Razorpay:",
-      JSON.stringify(paymentDetails, null, 2)
-    );
 
     if (paymentDetails.status !== "captured") {
-      console.error("Payment not captured. Status:", paymentDetails.status);
       return res
         .status(400)
         .json({ success: false, message: "Payment not captured" });
     }
 
-    // Validate backend-calculated amount against Razorpay's amount
     const backendSubtotalPromises = orderDetails.products.map(async (item) => {
       const product = await Product.findById(item.product_id);
       if (!product) {
-        // If product is not found, this is a serious data integrity issue or attack attempt
         throw new Error(
           `Product with ID ${item.product_id} not found during amount verification.`
         );
@@ -693,46 +654,20 @@ export const verifyCartPaymentAndCreateOrder = async (req, res) => {
     const subtotalAmountFromProducts = backendSubtotals.reduce(
       (sum, val) => sum + val,
       0
-    ); // Still in "dollars" (decimal)
+    );
 
-    // --- ALIGN CALCULATION WITH FRONTEND ---
-    // 1. Convert subtotal amount to paise and round
     const subtotalPaiseBackend = Math.round(subtotalAmountFromProducts * 100);
-    console.log(
-      `Backend Subtotal Amount (from products): $${subtotalAmountFromProducts.toFixed(
-        2
-      )}`
-    );
-    console.log(`Backend Subtotal in Paise (rounded): ${subtotalPaiseBackend}`);
-
-    const taxRate = 0.02; // Assuming 2% tax
-    // 2. Calculate tax in paise directly from subtotalPaiseBackend and round
+    const taxRate = 0.02;
     const taxPaiseBackend = Math.round(subtotalPaiseBackend * taxRate);
-    console.log(`Backend Tax Rate: ${taxRate * 100}%`);
-    console.log(`Backend Tax in Paise (rounded): ${taxPaiseBackend}`);
-
-    // 3. Sum subtotal and tax, both already in paise
     const totalInPaiseCalculated = subtotalPaiseBackend + taxPaiseBackend;
-    console.log(
-      `Backend Calculated Total (in paise): ${totalInPaiseCalculated}`
-    );
-    console.log(
-      `Razorpay Captured Amount (in paise): ${paymentDetails.amount}`
-    );
 
     if (paymentDetails.amount !== totalInPaiseCalculated) {
-      console.error("Payment amount mismatch!");
-      console.error(
-        `Razorpay Amount: ${paymentDetails.amount}, Backend Calculated Amount: ${totalInPaiseCalculated}`
-      );
-
       return res.status(400).json({
         success: false,
         message: "Payment amount mismatch. Refund initiated.",
       });
     }
 
-    // 3. Save payment record
     const paymentRecord = await Payment.create({
       user_id,
       razorpayOrderId: razorpay_order_id,
@@ -742,9 +677,7 @@ export const verifyCartPaymentAndCreateOrder = async (req, res) => {
       status: "Success",
       paymentMethod: paymentDetails.method.toUpperCase(),
     });
-    console.log("Payment record created:", paymentRecord);
 
-    // 4. Create Order
     const order = await Order.create({
       user_id,
       products: orderDetails.products,
@@ -755,12 +688,9 @@ export const verifyCartPaymentAndCreateOrder = async (req, res) => {
       amount: paymentDetails.amount,
       status: "Completed",
     });
-    console.log("Order created:", order);
 
-    // Update the payment record with the order ID
     paymentRecord.order_id = order._id;
     await paymentRecord.save();
-    console.log("Payment record updated with order ID.");
 
     await Cart.deleteOne({ user_id });
 

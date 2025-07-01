@@ -7,10 +7,10 @@ import {
   viewProfile,
   updateProfile,
   changePassword,
+  resetPassword,
+  sendResetLink,
 } from "../controllers/userController.js";
-
 import { upgradeToSeller } from "../controllers/sellerController.js";
-
 import authRole from "../middlewares/authRole.js";
 
 const userRouter = express.Router();
@@ -22,9 +22,7 @@ userRouter.get("/logout", authRole(["user", "seller"]), userLogout);
 userRouter.get("/profile", authRole(["user", "seller"]), viewProfile);
 userRouter.put("/updateprofile", authRole(["user", "seller"]), updateProfile);
 userRouter.put("/upgraderole", authRole(["user", "seller"]), upgradeToSeller);
-userRouter.put(
-  "/change-password",
-  authRole(["user", "seller"]),
-  changePassword
-);
+userRouter.post("/resetpassword", resetPassword);
+userRouter.post("/sendreset", sendResetLink);
+
 export default userRouter;

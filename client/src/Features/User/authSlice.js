@@ -11,6 +11,8 @@ import {
   CHECK_AUTH,
   CHANGE_PASSWORD,
   UPDATE_PROFILE,
+  FORGOT_PASS_URL,
+  RESET_PASS_URL,
 } from "../../utils/config";
 import { data } from "react-router-dom";
 import {
@@ -177,6 +179,42 @@ export const updateProfile = createAsyncThunk(
   }
 );
 
+export const forgotPasswordThunk = createAsyncThunk(
+  "auth/forgotPassword",
+  async (email, { rejectWithValue }) => {
+    try {
+      const res = await axios.post(
+        FORGOT_PASS_URL,
+        { email },
+        { withCredentials: true }
+      );
+      return res.data.message;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to send reset link"
+      );
+    }
+  }
+);
+
+export const resetPasswordThunk = createAsyncThunk(
+  "auth/resetPassword",
+  async ({ token, newPassword }, { rejectWithValue }) => {
+    try {
+      const res = await axios.post(
+        RESET_PASS_URL,
+        { token, newPassword },
+        { withCredentials: true }
+      );
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data?.message || "Password reset failed"
+      );
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: "auth",
   initialState: {
@@ -292,6 +330,28 @@ const authSlice = createSlice({
         state.user = action.payload.user;
       })
       .addCase(updateProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(forgotPasswordThunk.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(forgotPasswordThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        state.successMessage = action.payload;
+      })
+      .addCase(forgotPasswordThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(resetPasswordThunk.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(resetPasswordThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        state.successMessage = action.payload;
+      })
+      .addCase(resetPasswordThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

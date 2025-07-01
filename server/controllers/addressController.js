@@ -1,35 +1,39 @@
 import Address from "../models/Address.js";
 
 // add address : /api/address/add
+// Add Address : POST /api/address/add
 export const addAddress = async (req, res) => {
   try {
     const { address } = req.body;
-    await Address.create({ ...address, user_id: req.user._id });
-    res.json({
+
+    const createdAddress = await Address.create({
+      ...address,
+      user_id: req.user._id,
+    });
+
+    res.status(201).json({
       success: true,
-      message: "Address added successfully",
+      address: createdAddress,
     });
   } catch (error) {
     console.log(error.message);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// get address : /api/address/view
+// View All Addresses : GET /api/address/view
 export const viewAddress = async (req, res) => {
   try {
     const userId = req.user._id;
-    console.log("User ID:", req.user._id);
     const addresses = await Address.find({ user_id: userId });
-    res.json({ success: true, addresses });
-    console.log("Found addresses:", addresses);
+    res.status(200).json({ success: true, addresses });
   } catch (error) {
     console.log(error.message);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-//view single Address : /api/addres/:id
+// View Single Address : GET /api/address/:id
 export const viewSingleAddress = async (req, res) => {
   try {
     const address = await Address.findOne({
@@ -37,15 +41,17 @@ export const viewSingleAddress = async (req, res) => {
       user_id: req.user._id,
     });
     if (!address)
-      return res.json({ success: false, message: "Address not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Address not found" });
 
-    res.json({ success: true, address });
+    res.status(200).json({ success: true, address });
   } catch (error) {
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// update Address : /api/address/update
+// Update Address : PUT /api/address/update/:id
 export const updateAddress = async (req, res) => {
   try {
     const { address } = req.body;
@@ -55,8 +61,11 @@ export const updateAddress = async (req, res) => {
       _id: req.params.id,
       user_id: userId,
     });
+
     if (!existing)
-      return res.json({ success: false, message: "Unauthorized or not found" });
+      return res
+        .status(403)
+        .json({ success: false, message: "Unauthorized or not found" });
 
     if (address.isDefault) {
       await Address.updateMany({ user_id: userId }, { isDefault: false });
@@ -65,66 +74,76 @@ export const updateAddress = async (req, res) => {
     const updated = await Address.findByIdAndUpdate(req.params.id, address, {
       new: true,
     });
-    res.json({ success: true, address: updated });
+
+    res.status(200).json({ success: true, address: updated });
   } catch (error) {
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-//Delete ADresss : /api/address/delete
+// Delete Address : DELETE /api/address/delete/:id
 export const deleteAddress = async (req, res) => {
   try {
     const deleted = await Address.findOneAndDelete({
       _id: req.params.id,
       user_id: req.user._id,
     });
-    if (!deleted)
-      return res.json({
-        success: false,
-        message: "Address not found or unauthorized",
-      });
 
-    res.json({ success: true, message: "Address deleted successfully" });
+    if (!deleted)
+      return res
+        .status(404)
+        .json({ success: false, message: "Address not found or unauthorized" });
+
+    res
+      .status(200)
+      .json({ success: true, message: "Address deleted successfully" });
   } catch (error) {
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// for setting default Address /api/address/setdef
+// Set Default Address : PATCH /api/address/setdef/:id
 export const setDefaultAddress = async (req, res) => {
   try {
     const address = await Address.findOne({
       _id: req.params.id,
       user_id: req.user._id,
     });
+
     if (!address)
-      return res.json({
-        success: false,
-        message: "Address not found or unauthorized",
-      });
+      return res
+        .status(404)
+        .json({ success: false, message: "Address not found or unauthorized" });
 
     await Address.updateMany({ user_id: req.user._id }, { isDefault: false });
     address.isDefault = true;
     await address.save();
 
-    res.json({ success: true, message: "Default address set successfully" });
+    res.status(200).json({
+      success: true,
+      address,
+      message: "Default address set successfully",
+    });
   } catch (error) {
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// for gettingt Address /api/address/getdef
+// Get Default Address : GET /api/address/getdef
 export const getDefaultAddress = async (req, res) => {
   try {
     const address = await Address.findOne({
       user_id: req.user._id,
       isDefault: true,
     });
-    if (!address)
-      return res.json({ success: false, message: "No default address found" });
 
-    res.json({ success: true, address });
+    if (!address)
+      return res
+        .status(404)
+        .json({ success: false, message: "No default address found" });
+
+    res.status(200).json({ success: true, address });
   } catch (error) {
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };

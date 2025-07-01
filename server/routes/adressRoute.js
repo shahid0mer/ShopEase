@@ -22,7 +22,7 @@ addressRouter.delete(
   authRole(["user", "seller"]),
   deleteAddress
 );
-addressRouter.put(
+addressRouter.patch(
   "/setdef/:id",
   authRole(["user", "seller"]),
   setDefaultAddress

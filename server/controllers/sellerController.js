@@ -32,7 +32,7 @@ export const upgradeToSeller = async (req, res) => {
         _id: user._id,
         email: user.email,
         role: user.role,
-        name: user.name, // add whatever you need
+        name: user.name,
       },
     });
   } catch (error) {
@@ -131,7 +131,7 @@ export const getSellerProducts = async (req, res) => {
     const objectIdSellerId = new mongoose.Types.ObjectId(sellerId);
 
     const products = await Product.find({ seller_id: objectIdSellerId })
-      .populate("category_id") 
+      .populate("category_id")
       .sort({ createdAt: -1 });
 
     return res.status(200).json({ success: true, products });

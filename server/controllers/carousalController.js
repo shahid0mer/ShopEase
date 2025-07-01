@@ -8,7 +8,9 @@ export const getCarousels = async (req, res) => {
     const carousels = await Carousel.find().sort({ createdAt: -1 });
     res.status(200).json(carousels);
   } catch (err) {
-    res.status(500).json({ message: "Failed to fetch carousels" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch carousels" });
   }
 };
 
@@ -17,15 +19,17 @@ export const addCarousel = async (req, res) => {
   try {
     const file = req.file;
     if (!file) {
-      return res.status(400).json({ message: "Image file is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Image file is required" });
     }
 
-    // ✅ Make sure cloudinary is configured (skip if already done globally)
+    // ✅ Ensure Cloudinary config exists
     if (!cloudinary.config().cloud_name) {
       console.warn("Cloudinary not configured. Set via connectCloudinary().");
     }
 
-    // ✅ Upload image from buffer using upload_stream
+    // ✅ Upload buffer via stream
     const result = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         { folder: "ecommerce/carousels" },
@@ -35,30 +39,36 @@ export const addCarousel = async (req, res) => {
         }
       );
 
-      stream.end(file.buffer); // Send buffer to Cloudinary
+      stream.end(file.buffer);
     });
 
     const newCarousel = new Carousel({
       title: req.body.title,
-      subtitle: req.body.subtitle, // ✅ New line
+      subtitle: req.body.subtitle,
       link: req.body.link,
       alt: req.body.alt,
       imageUrl: result.secure_url,
     });
 
     const saved = await newCarousel.save();
-    res.status(201).json(saved);
+    res.status(201).json({ success: true, carousel: saved });
   } catch (err) {
     console.error("Error adding carousel:", err);
-    res.status(500).json({ message: "Error adding carousel" });
+    res.status(500).json({ success: false, message: "Error adding carousel" });
   }
 };
+
 // DELETE /api/carousels/:id (admin)
 export const deleteCarousel = async (req, res) => {
   try {
-    await Carousel.findByIdAndDelete(req.params.id);
-    res.status(200).json({ message: "Carousel deleted" });
+    const deleted = await Carousel.findByIdAndDelete(req.params.id);
+    if (!deleted) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Carousel not found" });
+    }
+    res.status(200).json({ success: true, message: "Carousel deleted" });
   } catch (err) {
-    res.status(500).json({ message: "Deletion failed" });
+    res.status(500).json({ success: false, message: "Deletion failed" });
   }
 };

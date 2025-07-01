@@ -1,19 +1,22 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
+import { transporter } from "../utils/sendOTP.js";
 
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password, phone } = req.body;
 
     if (!name || !email || !password) {
-      return res.json({ success: false, message: "Details Missing" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Details Missing" });
     }
 
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
-      return res.json({ success: false, message: "User Exists" });
+      return res.status(409).json({ success: false, message: "User Exists" });
     }
 
     const hashedPasssword = await bcrypt.hash(password, 10);
@@ -32,11 +35,11 @@ export const registerUser = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict", // csrf protection
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.json({
+    return res.status(201).json({
       success: true,
       message: "User Registered",
       user: {
@@ -48,32 +51,99 @@ export const registerUser = async (req, res) => {
       },
     });
   } catch (error) {
-    console.log(error.message);
-
-    return res.json({ success: false, message: error.message });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// User Registration : /api/user/login
+export const sendResetLink = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "15m",
+    });
+
+    const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
+
+    await transporter.sendMail({
+      to: email,
+      from: `"ShopEase Support" <${process.env.SENDER_EMAIL}>`,
+      subject: "Reset your password",
+      html: `<p>You requested to reset your password.</p>
+             <p>Click the link below to proceed:</p>
+             <a href="${resetLink}">${resetLink}</a>
+             <p>This link will expire in 15 minutes.</p>`,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Reset link sent to email",
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to send reset email" });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Password reset successful" });
+  } catch (err) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid or expired token" });
+  }
+};
 
 export const userLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.json({ success: false, message: "Invalid Credentials" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid Credentials" });
     }
 
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.json({ success: false, message: "User Does not Exist" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User Does not Exist" });
     }
 
     const isPassMatch = await bcrypt.compare(password, user.password);
 
     if (!isPassMatch) {
-      return res.json({ success: false, message: "Invalid Credentials" });
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid Credentials" });
     }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -87,7 +157,7 @@ export const userLogin = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.json({
+    return res.status(200).json({
       success: true,
       message: "User LoggedIn",
       user: {
@@ -99,32 +169,28 @@ export const userLogin = async (req, res) => {
       },
     });
   } catch (error) {
-    console.log(error.message);
-    return res.json({ success: false, message: error.message });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
 // Check UserAuthorisation : /api/user/is-auth
-
 export const isAuth = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    const user = await User.findById(userId).select("-password"); // retrieve userdata from decodetoken excluding password
-    console.log(user);
+    const user = await User.findById(userId).select("-password");
 
-    return res.json({
+    return res.status(200).json({
       success: true,
       message: `${user.name} authorized`,
       user,
     });
   } catch (error) {
-    console.log(error.message);
-
-    return res.json({ success: false, message: error.message });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
+// POST /api/user/logout
 export const userLogout = async (req, res) => {
   try {
     res.clearCookie("token", {
@@ -132,17 +198,15 @@ export const userLogout = async (req, res) => {
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
     });
-    return res.json({ success: true, message: "User Logged Out" });
+    return res.status(200).json({ success: true, message: "User Logged Out" });
   } catch (error) {
-    console.log(error.message);
-    return res.json({ success: false, message: error.message });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
+// GET /api/user/profile
 export const viewProfile = async (req, res) => {
   try {
-    console.log("📥 Incoming request from:", req.user);
-
     if (!req.user) {
       return res
         .status(401)
@@ -151,19 +215,17 @@ export const viewProfile = async (req, res) => {
 
     const { name, email, role, _id } = req.user;
 
-    return res.json({
+    return res.status(200).json({
       success: true,
       message: `${name} profile details`,
       user: { name, email, role, _id },
     });
   } catch (error) {
-    console.log("❌ viewProfile Error:", error.message);
     return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// /api/user/updateprofile
-
+// PUT /api/user/updateprofile
 export const updateProfile = async (req, res) => {
   try {
     const { name, email, phone } = req.body;
@@ -182,13 +244,12 @@ export const updateProfile = async (req, res) => {
       { new: true, runValidators: true }
     ).select("-password");
 
-    return res.json({
+    return res.status(200).json({
       success: true,
       message: "Profile updated successfully",
       user: updatedUser,
     });
   } catch (error) {
-    console.error(error);
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -196,13 +257,12 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-// Change Password /api/user/change-password
+// PATCH /api/user/change-password
 export const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
     const userId = req.user._id;
 
-    // Validation
     if (!currentPassword || !newPassword) {
       return res.status(400).json({
         success: false,
@@ -225,7 +285,6 @@ export const changePassword = async (req, res) => {
       });
     }
 
-    // Verify current password
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
       return res.status(401).json({
@@ -234,7 +293,6 @@ export const changePassword = async (req, res) => {
       });
     }
 
-    // Hash and update new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
     await user.save();
@@ -244,7 +302,6 @@ export const changePassword = async (req, res) => {
       message: "Password updated successfully",
     });
   } catch (error) {
-    console.error("Password change error:", error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",

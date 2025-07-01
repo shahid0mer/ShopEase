@@ -38,7 +38,9 @@ export const addReview = async (req, res) => {
       content,
     });
 
-    res.json({ success: true, message: "Review added successfully", review });
+    res
+      .status(201)
+      .json({ success: true, message: "Review added successfully", review });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -65,7 +67,7 @@ export const getReview = async (req, res) => {
         .json({ success: false, message: "Review not found" });
     }
 
-    res.json({ success: true, review });
+    res.status(200).json({ success: true, review });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -91,7 +93,7 @@ export const updateReview = async (req, res) => {
       });
     }
 
-    res.json({ success: true, message: "Review updated", review });
+    res.status(200).json({ success: true, message: "Review updated", review });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -112,7 +114,7 @@ export const deleteReview = async (req, res) => {
       });
     }
 
-    res.json({ success: true, message: "Review deleted" });
+    res.status(200).json({ success: true, message: "Review deleted" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -134,7 +136,7 @@ export const getAllReviews = async (req, res) => {
       "name"
     );
 
-    res.json({ success: true, reviews });
+    res.status(200).json({ success: true, reviews });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

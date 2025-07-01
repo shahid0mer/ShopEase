@@ -10,27 +10,31 @@ export const productView = async (req, res) => {
   try {
     const { id } = req.params;
     const product = await Product.findById(id);
-    res.json({ success: true, product });
+    if (!product) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
+    }
+    res.status(200).json({ success: true, product });
   } catch (error) {
     console.log(error.message);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
 // Add Product : /api/product/add
 export const addProduct = async (req, res) => {
   try {
-    console.log("Inside addProduct controller:");
-    console.log("req.user:", req.user); // <-- CHECK THIS!
-    console.log("req.user._id:", req.user?._id);
     if (!req.files || req.files.length === 0) {
-      return res.json({ success: false, message: "No files uploaded" });
+      return res
+        .status(400)
+        .json({ success: false, message: "No files uploaded" });
     }
 
     const productData = JSON.parse(req.body.productData);
 
     if (!productData.name || !productData.category_id) {
-      return res.json({
+      return res.status(400).json({
         success: false,
         message: "Name and category are required",
       });
@@ -63,14 +67,14 @@ export const addProduct = async (req, res) => {
       seller_id: req.user._id,
     });
 
-    res.json({
+    res.status(201).json({
       success: true,
       message: "Product added successfully",
       product: newProduct,
     });
   } catch (error) {
     console.error(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -94,10 +98,12 @@ export const changeStock = async (req, res) => {
     product.inStock = inStock;
     await product.save();
 
-    res.json({ success: true, message: "Product stock updated successfully" });
+    res
+      .status(200)
+      .json({ success: true, message: "Product stock updated successfully" });
   } catch (error) {
     console.log(error.message);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -109,7 +115,9 @@ export const updatefullProduct = async (req, res) => {
 
     const product = await Product.findById(id);
     if (!product) {
-      return res.json({ success: false, message: "Product not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
 
     if (!product.seller_id.equals(req.user._id)) {
@@ -143,14 +151,14 @@ export const updatefullProduct = async (req, res) => {
       new: true,
     });
 
-    res.json({
+    res.status(200).json({
       success: true,
       message: "Product updated successfully",
       product: updatedProduct,
     });
   } catch (error) {
     console.error(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -172,10 +180,12 @@ export const deleteProduct = async (req, res) => {
 
     await product.deleteOne();
 
-    res.json({ success: true, message: "Product deleted successfully" });
+    res
+      .status(200)
+      .json({ success: true, message: "Product deleted successfully" });
   } catch (error) {
     console.log(error.message);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -183,25 +193,24 @@ export const deleteProduct = async (req, res) => {
 export const getAllProducts = async (req, res) => {
   try {
     const products = await Product.find({});
-    res.json({ success: true, products });
+    res.status(200).json({ success: true, products });
   } catch (error) {
     console.log(error.message);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// Get Products by Category : /api/product/category/:category
+// Get Products by Category : /api/product/category/:categoryId
 export const getProductsByCategory = async (req, res) => {
   try {
     const { categoryId } = req.params;
-    console.log("categoryId received:", categoryId);
 
     const products = await Product.find({ category_id: categoryId }).populate(
       "category_id",
       "name"
     );
 
-    res.json({ success: true, products });
+    res.status(200).json({ success: true, products });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -209,7 +218,5 @@ export const getProductsByCategory = async (req, res) => {
 
 // Search Products : /api/product/search/:query
 export const searchProducts = async (req, res) => {
-  res.send({ message: "product controller" });
+  res.status(200).send({ message: "product controller" });
 };
-
-

@@ -10,7 +10,6 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   if (loading) return <p>Loading...</p>;
 
   if (!isAuthenticated) {
-    toast.error("please login");
     return <Navigate to="/" />;
   }
 

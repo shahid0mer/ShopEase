@@ -6,13 +6,11 @@ import Address from "../models/Address.js";
 import crypto from "crypto";
 
 export const singleProductCheckout = async (req, res) => {
-  console.log("\n--- Backend: Entering singleProductCheckout ---");
   try {
     const user_id = req.user._id;
     const { productId, quantity, address, paymentType, amount, currency } =
       req.body;
 
-    // --- Step 1: Validate Input ---
     if (
       !productId ||
       !quantity ||
@@ -26,12 +24,11 @@ export const singleProductCheckout = async (req, res) => {
         .json({ message: "Missing required fields for checkout." });
     }
 
-    const finalAmountInPaise = Math.round(parseFloat(amount)); // Keep this fix
+    const finalAmountInPaise = Math.round(parseFloat(amount));
     if (isNaN(finalAmountInPaise) || finalAmountInPaise <= 0) {
       return res.status(400).json({ message: "Invalid amount provided." });
     }
 
-    // --- Step 2: Validate Product and Address ---
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
@@ -45,7 +42,6 @@ export const singleProductCheckout = async (req, res) => {
       return res.status(404).json({ message: "Shipping address not found." });
     }
 
-    // --- Step 3: Server-side Amount Verification ---
     const basePrice = product.offerPrice || product.price || 0;
     const expectedAmountInPaise = Math.round(basePrice * quantity * 1.02 * 100);
 
@@ -59,10 +55,9 @@ export const singleProductCheckout = async (req, res) => {
         .json({ message: "Amount validation failed on server." });
     }
 
-    // --- Step 4: Handle Payment Flow ---
     if (paymentType === "ONLINE") {
       const razorpayOptions = {
-        amount: finalAmountInPaise, // This is the amount you send TO Razorpay
+        amount: finalAmountInPaise,
         currency: currency,
         receipt: `order_rcptid_${Date.now()}`,
         notes: {
@@ -74,16 +69,14 @@ export const singleProductCheckout = async (req, res) => {
 
       try {
         const razorpayOrder = await razorpay.orders.create(razorpayOptions);
-        console.log("Razorpay Order Created:", razorpayOrder); // Add this line for debugging
 
-        // Corrected part: Use finalAmountInPaise for response
-        return res.json({
+        return res.status(200).json({
           success: true,
           requiresPayment: true,
           paymentData: {
             id: razorpayOrder.id,
-            amount: finalAmountInPaise, // ✅ Use the validated amount you sent to Razorpay
-            currency: razorpayOrder.currency, // This should be available from razorpayOrder
+            amount: finalAmountInPaise,
+            currency: razorpayOrder.currency,
           },
           message: "Razorpay order initiated. Awaiting payment.",
         });
@@ -112,11 +105,7 @@ export const singleProductCheckout = async (req, res) => {
   }
 };
 
-
-
-
 export const verifyPaymentAndCreateOrder = async (req, res) => {
-  console.log("\n--- Backend: Entering verifyPaymentAndCreateOrder ---");
   try {
     const {
       razorpayPaymentId,
@@ -128,7 +117,6 @@ export const verifyPaymentAndCreateOrder = async (req, res) => {
     } = req.body;
     const user_id = req.user._id;
 
-    // --- Step 1: Verify Razorpay Signature ---
     const body = razorpayOrderId + "|" + razorpayPaymentId;
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
@@ -142,7 +130,6 @@ export const verifyPaymentAndCreateOrder = async (req, res) => {
       });
     }
 
-    // --- Step 2: Fetch Payment Details from Razorpay and Verify Amount ---
     const paymentDetails = await razorpay.payments.fetch(razorpayPaymentId);
     if (paymentDetails.status !== "captured") {
       return res.status(400).json({
@@ -162,40 +149,34 @@ export const verifyPaymentAndCreateOrder = async (req, res) => {
       });
     }
 
-    // --- Step 3: Create Documents using 3-Step Process ---
-
-    // 3a. CREATE THE PAYMENT RECORD (without order_id)
     const paymentRecord = new Payment({
       user_id,
-      paymentMethod: paymentDetails.method.toUpperCase(), // e.g., "CARD", "UPI"
+      paymentMethod: paymentDetails.method.toUpperCase(),
       razorpayOrderId,
       transactionId: razorpayPaymentId,
       status: "Success",
-      amount: paymentDetails.amount, // Store amount in paise
+      amount: paymentDetails.amount,
       currency: paymentDetails.currency,
     });
     await paymentRecord.save();
 
-    // 3b. CREATE THE ORDER RECORD (now with a valid payment_id)
     const createdOrder = await Order.create({
       user_id,
       products: [
         { product_id: productId, quantity, seller_id: product.seller_id },
       ],
       paymentType: "ONLINE",
-      payment_id: paymentRecord._id, // ✅ Link to the newly created payment
-      amount: paymentDetails.amount, // Store amount in paise
+      payment_id: paymentRecord._id,
+      amount: paymentDetails.amount,
       shippingAddress: address._id,
       status: "Completed",
       isPaid: true,
     });
 
-    // 3c. UPDATE THE PAYMENT RECORD with the new order's ID
     paymentRecord.order_id = createdOrder._id;
     await paymentRecord.save();
 
-    // --- Step 4: Return Success Response ---
-    return res.json({
+    return res.status(200).json({
       success: true,
       message: "Order placed and payment verified successfully!",
       order: createdOrder,

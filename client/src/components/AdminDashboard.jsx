@@ -29,7 +29,6 @@ const AdminDashboard = ({ isOpen, onClose }) => {
 
   return (
     <>
-      {/* Backdrop for mobile sidebar */}
       {isOpen && (
         <div
           className="lg:hidden fixed inset-0 backdrop-blur-sm bg-opacity-50 z-20"
@@ -45,12 +44,10 @@ const AdminDashboard = ({ isOpen, onClose }) => {
           ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
       >
-        {/* ShopEase Logo/Header - Only show on desktop */}
         <div className="hidden lg:block p-5 border-b border-gray-100 dark:border-neutral-800">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center">
               <span className="text-blue-600 mr-2">📊</span>{" "}
-              {/* Changed icon for Admin */}
               <span>Admin Panel</span>
               <span className="text-xs ml-2 bg-blue-100 text-blue-800 px-2 py-1 rounded-full dark:bg-blue-900 dark:text-blue-300">
                 Admin
@@ -59,18 +56,16 @@ const AdminDashboard = ({ isOpen, onClose }) => {
           </div>
         </div>
 
-        {/* Mobile Header */}
         <div className="lg:hidden p-5 border-b border-gray-100 dark:border-neutral-800">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center">
               <span className="text-blue-600 mr-2">📊</span>{" "}
-              {/* Changed icon for Admin */}
               <span>Admin Panel</span>
               <span className="text-xs ml-2 bg-blue-100 text-blue-800 px-2 py-1 rounded-full dark:bg-blue-900 dark:text-blue-300">
                 Admin
               </span>
             </h2>
-            {/* Close button for mobile */}
+
             <button
               onClick={onClose}
               className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-neutral-800"
@@ -80,7 +75,6 @@ const AdminDashboard = ({ isOpen, onClose }) => {
           </div>
         </div>
 
-        {/* Navigation Menu */}
         <nav className="mt-6">
           <ul className="space-y-1 px-3">
             {menuItems.map((item) => (
@@ -89,7 +83,7 @@ const AdminDashboard = ({ isOpen, onClose }) => {
                   to={item.path}
                   onClick={() => {
                     setActiveItem(item.path);
-                    onClose(); // Close sidebar on mobile after navigation
+                    onClose();
                   }}
                   className={`flex items-center px-4 py-3 rounded-lg transition-colors ${
                     activeItem === item.path ||
@@ -112,7 +106,6 @@ const AdminDashboard = ({ isOpen, onClose }) => {
           </ul>
         </nav>
 
-        {/* Admin Profile/Logout */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100 dark:border-neutral-800">
           <button
             className="flex items-center w-full px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
