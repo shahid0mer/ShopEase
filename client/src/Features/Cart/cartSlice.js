@@ -1,4 +1,3 @@
-// src/Features/Cart/cartSlice.js
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { checkAuthStatus, logoutUser } from "../User/authSlice";

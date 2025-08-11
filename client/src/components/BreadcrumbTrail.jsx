@@ -6,12 +6,12 @@ const BreadcrumbTrail = () => {
   const location = useLocation();
   const pathnames = location.pathname.split("/").filter(Boolean);
 
-  // Access product info from Redux
   const productInfo = useSelector((state) => state.product.ProductInfo);
   const categories = useSelector((state) => state.category.categories);
   const resolveCategoryName = (id) => {
-    const category = categories?.find((cat) => cat._id === id);
-    return category ? category.name : id;
+    if (!categories || categories.length === 0) return null;
+    const category = categories.find((cat) => cat._id === id);
+    return category?.name || null;
   };
   return (
     <div className="border border-[var(--neutral-200)] border-x-0 w-full flex mx-auto p-4 text-[var(--neutral-500)]">
@@ -23,15 +23,19 @@ const BreadcrumbTrail = () => {
         {pathnames.map((name, index) => {
           const routeTo = `/${pathnames.slice(0, index + 1).join("/")}`;
           const isLast = index === pathnames.length - 1;
-
           const isProductPage = pathnames[0] === "product" && index === 1;
           const isCategoryPage = pathnames[0] === "category" && index === 1;
+          const isCategoryRoot = pathnames[0] === "category" && index === 0;
+
+          if (isCategoryRoot) return null; // 🔥 skip the word "category"
+
           let displayName = name;
 
           if (isProductPage && productInfo?.name) {
             displayName = productInfo.name;
           } else if (isCategoryPage) {
-            displayName = resolveCategoryName(name);
+            const resolvedName = resolveCategoryName(name);
+            displayName = resolvedName || name;
           }
 
           return (

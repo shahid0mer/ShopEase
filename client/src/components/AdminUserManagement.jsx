@@ -5,7 +5,7 @@ import {
   deleteUserById,
   toggleUserRole,
 } from "../Features/Admin/adminSlice";
-import { toast } from "sonner"; // Assuming 'sonner' is your toast notification library
+import { toast } from "sonner";
 
 const AdminUserManagement = () => {
   const dispatch = useDispatch();
@@ -20,7 +20,9 @@ const AdminUserManagement = () => {
       dispatch(deleteUserById(id))
         .unwrap()
         .then(() => toast.success("User deleted successfully!"))
-        .catch((err) => toast.error(`Failed to delete user: ${err.message || err}`));
+        .catch((err) =>
+          toast.error(`Failed to delete user: ${err.message || err}`)
+        );
     }
   };
 
@@ -28,7 +30,9 @@ const AdminUserManagement = () => {
     dispatch(toggleUserRole(id))
       .unwrap()
       .then((res) => toast.success(`Role updated to ${res.role}`))
-      .catch((err) => toast.error(`Failed to update role: ${err.message || err}`));
+      .catch((err) =>
+        toast.error(`Failed to update role: ${err.message || err}`)
+      );
   };
 
   return (
@@ -43,7 +47,7 @@ const AdminUserManagement = () => {
         <p className="text-red-500 dark:text-red-400">Error: {error}</p>
       ) : (
         <>
-          {/* Desktop Table View - Hidden on small screens */}
+          {/* Desktop Table View  Hidden on small screens */}
           <div className="hidden md:block overflow-x-auto rounded-lg shadow-md">
             <table className="w-full min-w-[640px] border border-gray-300 dark:border-neutral-700 text-sm md:text-base">
               <thead className="bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-neutral-300">

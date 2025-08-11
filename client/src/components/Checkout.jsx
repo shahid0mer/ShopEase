@@ -217,7 +217,7 @@ const Checkout = () => {
                 )}
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-gray-800 mb-2">
+                <p className="font-semibold text-gray-800 mb-2 dark:text-neutral-300">
                   {product.name || "Unknown Product"}
                 </p>
                 <div className="font-normal text-gray-500/70 space-y-1">
@@ -250,7 +250,10 @@ const Checkout = () => {
         </AnimatePresence>
       </div>
 
-      <div className="max-w-[360px] h-fit w-full bg-gray-100/40 p-7 max-md:mt-16 border border-gray-300/70 rounded sticky top-[130px]">
+      <div
+        className="max-w-[360px] h-fit w-full bg-gray-100/40 p-7 max-md:mt-16 border border-gray-300/70 rounded sticky top-[130px]
+                       dark:bg-neutral-800 dark:border-neutral-700"
+      >
         <h2 className="text-xl font-medium">Order Summary</h2>
         <hr className="border-gray-300 my-5" />
 
@@ -295,11 +298,13 @@ const Checkout = () => {
             )}
           </div>
 
-          <p className="text-sm font-medium uppercase mt-6">Payment Method</p>
+          <p className="text-sm font-medium uppercase mt-6 text-gray-700 dark:text-neutral-300">
+            Payment Method
+          </p>
           <select
             value={paymentMethod}
             onChange={(e) => setPaymentMethod(e.target.value)}
-            className="w-full border border-gray-300 bg-white px-3 py-2 mt-2 outline-none"
+            className="w-full border border-gray-300 bg-white px-3 py-2 mt-2 outline-none dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-200"
           >
             <option value="COD">Cash On Delivery</option>
             <option value="ONLINE">Online Payment</option>

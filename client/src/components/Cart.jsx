@@ -148,7 +148,6 @@ const Cart = () => {
         address: selectedAddress,
       };
 
-      console.log("Order Payload for COD =>", orderPayloadCOD);
       result = await dispatch(placeOrderCOD(orderPayloadCOD));
 
       if (
@@ -156,7 +155,7 @@ const Cart = () => {
         result.payload?.success
       ) {
         toast.success("Order placed successfully with Cash On Delivery!");
-        navigate(`/order-success/${result.payload.order?._id || "unknown"}`);
+        navigate(`/account/orders || "unknown"}`);
       } else {
         toast.error(
           "COD order failed: " +

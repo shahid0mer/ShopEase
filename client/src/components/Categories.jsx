@@ -1,9 +1,9 @@
-import fashionpng from "../assets/Categories/Fashion.webp";
-import electronicspng from "../assets/Categories/Electronics.webp";
-import Furniturepng from "../assets/Categories/Home & Furniture.webp";
-import grocerypng from "../assets/Categories/Grocery.webp";
-import appliancepng from "../assets/Categories/Appliances.webp";
-import cosmmeticspng from "../assets/Categories/Cosmetics.webp";
+import fashionpng from "../assets/Categories/fashion.webp";
+import electronicspng from "../assets/Categories/electronics.webp";
+import Furniturepng from "../assets/Categories/furniture.webp";
+import grocerypng from "../assets/Categories/grocery.webp";
+import appliancepng from "../assets/Categories/appliance.webp";
+import cosmmeticspng from "../assets/Categories/cosmetics.webp";
 import { useDispatch } from "react-redux";
 import { fetchProductsByCategory } from "../Features/Product/productSlice";
 import { useNavigate } from "react-router-dom";
@@ -52,7 +52,6 @@ const Categories = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-8">
-      {/* Text color for "Popular Categories" */}
       <h2 className="text-2xl font-bold text-[var(--neutral-700)] dark:text-[var(--neutral-700)] mb-8 ">
         Popular Categories
       </h2>
@@ -63,19 +62,19 @@ const Categories = () => {
             key={category.id}
             onClick={() => handleCategoryClick(category.id)}
             className="
-              flex flex-col items-center p-4
+              flex flex-col items-center 
               hover:translate-y-[-8px] active:scale-110 duration-400
               hover:text-[var(--primary)]
               border-0 sm:border-[1px]
               border-[var(--neutral-200)] 
               hover:border-[var(--primary)] dark:hover:border-[var(--primary-light)]
-              w-full h-[130px] transition-all
+              w-full h-[140px] transition-all
               bg-[var(--neutral-50)] 
               text-[var(--neutral-700)] dark:text-[var(--neutral-500)] dark:bg-neutral-800
             "
           >
             <img
-              className="object-contain rounded-sm w-16 h-16 mb-2 "
+              className="object-fill rounded-sm w-24 h-24 hover:scale-120 transition-all duration-300"
               src={category.icon}
               alt={category.name}
             />

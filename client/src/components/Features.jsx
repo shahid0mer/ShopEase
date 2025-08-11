@@ -9,7 +9,6 @@ const Features = () => {
                     dark:text-neutral-100"
         >
           {" "}
-          {/* Added for dark mode heading color */}
           Why Shop With Us?
         </p>
         <p
@@ -17,7 +16,6 @@ const Features = () => {
                     dark:text-neutral-400"
         >
           {" "}
-          {/* Added for dark mode paragraph color */}
           Experience the difference with our commitment to quality, convenience,
           and customer satisfaction.
         </p>

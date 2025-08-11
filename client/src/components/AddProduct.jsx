@@ -26,7 +26,6 @@ const AddProduct = () => {
   const [images, setImages] = useState([]);
   const [isDragOver, setIsDragOver] = useState(false);
 
-  // Fetch categories on component mount
   useEffect(() => {
     dispatch(fetchCategories());
   }, [dispatch]);
@@ -57,7 +56,6 @@ const AddProduct = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Validation
     if (!productData.name || !productData.category_id) {
       alert("Product name and category are required");
       return;
@@ -68,7 +66,6 @@ const AddProduct = () => {
       return;
     }
 
-    // Dispatch with separate productData and images
     dispatch(addProduct({ productData, images }));
   };
 
@@ -91,7 +88,6 @@ const AddProduct = () => {
     setImages(updatedImages);
   };
 
-  // Drag and Drop handlers
   const handleDragOver = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -113,7 +109,6 @@ const AddProduct = () => {
     addImages(files);
   };
 
-  // Drag and drop for reordering images
   const handleImageDragStart = (e, index) => {
     e.dataTransfer.setData("text/plain", index);
   };
@@ -139,7 +134,6 @@ const AddProduct = () => {
   };
 
   return (
-    // Main container background and text color
     <div className="w-full p-6 rounded-lg bg-white dark:bg-neutral-900">
       <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
         Add New Product
@@ -234,7 +228,6 @@ const AddProduct = () => {
                       </div>
                     )}
 
-                    {/* Remove button */}
                     <button
                       type="button"
                       onClick={(e) => {
@@ -246,7 +239,6 @@ const AddProduct = () => {
                       ✕
                     </button>
 
-                    {/* Drag handle */}
                     <div className="absolute bottom-1 right-1 text-white bg-black bg-opacity-50 rounded p-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <svg
                         className="w-3 h-3"
@@ -279,7 +271,6 @@ const AddProduct = () => {
           />
         </div>
 
-        {/* Description */}
         <div className="mb-6">
           <h2 className="text-lg font-semibold text-gray-700 dark:text-neutral-200 mb-2">
             Product Description

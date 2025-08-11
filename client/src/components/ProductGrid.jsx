@@ -2,13 +2,13 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { addToCartAsync } from "../Features/Cart/cartSlice";
-import { shopEaseToast } from "../utils/shopEaseToast.jsx";
+
 import { toast } from "sonner";
 
 const ProductGrid = ({ product }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  console.log("Received product:", product); // Verify what you received
+  console.log("Received product:", product);
 
   const { filteredProducts = [], loading } = useSelector(
     (state) => state.product
@@ -24,7 +24,10 @@ const ProductGrid = ({ product }) => {
     }
   };
 
-  const productsToDisplay = filteredProducts;
+  const productsToDisplay =
+    filteredProducts?.filter(
+      (product) => product !== null && product.inStock !== false
+    ) || [];
 
   return (
     <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6">

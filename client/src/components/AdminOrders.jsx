@@ -157,7 +157,7 @@ const AdminOrders = () => {
             ${(order.amount / 100).toFixed(2)}
           </p>
 
-          {/* User Info (Admin only) */}
+          
           {isAdmin && (
             <div className="text-sm dark:text-[var(--neutral-500)]">
               <p className="font-medium dark:text-[var(--neutral-700)]">

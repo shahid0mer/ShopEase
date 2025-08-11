@@ -1,34 +1,31 @@
-// src/utils/razorpayHandlerCart.js
-
 import { toast } from "sonner";
 
-// Function to dynamically load the Razorpay SDK script
 export const loadRazorpayScript = () => {
   return new Promise((resolve) => {
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.onload = () => resolve(true); // Resolve true when script loads successfully
+    script.onload = () => resolve(true);
     script.onerror = () => {
       console.error("Failed to load Razorpay SDK.");
-      resolve(false); // Resolve false if there's an error loading the script
+      resolve(false);
     };
-    document.body.appendChild(script); // Append the script to the document body
+    document.body.appendChild(script);
   });
 };
 
 /**
  * Initiates a Razorpay payment specifically for a shopping cart order.
  *
- * @param {Object} params - Parameters for the Razorpay payment.
- * @param {string} params.razorpayKeyId - Your Razorpay Key ID.
- * @param {Object} params.razorpayOrder - Razorpay order details (id, amount, currency) from your backend.
- * @param {Object} params.product - General product details for the Razorpay popup (e.g., { name: "Your Shopping Cart Order" }).
+ * @param {Object} params
+ * @param {string} params.razorpayKeyId
+ * @param {Object} params.razorpayOrder
+ * @param {Object} params.product
  * @param {Object} params.user - User details (name, email, phone) for prefill.
  * @param {Object} params.selectedAddress - Selected shipping address details for prefill and notes.
- * @param {Object} params.originalCheckoutData - The complete order payload from Cart.jsx, to be sent to the backend for verification.
+ * @param {Object} params.originalCheckoutData - The complete order payload from Cart.jsx
  * @param {Function} params.dispatch - Redux dispatch function.
- * @param {Function} params.placeOnlineOrderThunk - The Redux thunk for backend payment verification (e.g., placeOnlineOrderCart).
- * @param {Function} params.navigate - React Router navigate function.
+ * @param {Function} params.placeOnlineOrderThunk
+ * @param {Function} params.navigate
  */
 export const startRazorpayCartPayment = async ({
   razorpayKeyId,
@@ -36,12 +33,11 @@ export const startRazorpayCartPayment = async ({
   product,
   user,
   selectedAddress,
-  originalCheckoutData, // This is the full 'orderPayload' from Cart.jsx
+  originalCheckoutData,
   dispatch,
   placeOnlineOrderThunk,
   navigate,
 }) => {
-  // Ensure Razorpay Key ID is available
   if (!razorpayKeyId) {
     toast.error(
       "Razorpay Key ID is not available. Cannot proceed with payment."
@@ -49,7 +45,6 @@ export const startRazorpayCartPayment = async ({
     return;
   }
 
-  // Basic validation for Razorpay order details from backend
   if (!razorpayOrder || !razorpayOrder.id || !razorpayOrder.amount) {
     console.error(
       "Invalid Razorpay order details provided to cart handler:",
@@ -61,7 +56,6 @@ export const startRazorpayCartPayment = async ({
     return;
   }
 
-  // Load Razorpay SDK script dynamically if not already loaded
   const scriptLoaded = await loadRazorpayScript();
   if (!scriptLoaded) {
     toast.error(
@@ -94,17 +88,15 @@ export const startRazorpayCartPayment = async ({
         dataToSendToBackend
       );
 
-      // Dispatch the thunk to verify payment and create the order on your backend
       const result = await dispatch(placeOnlineOrderThunk(dataToSendToBackend));
 
-      // Handle the result from your backend's verification
       if (
         result.meta.requestStatus === "fulfilled" &&
-        result.payload?.success && // Check for 'success' flag from backend response
-        result.payload?.order?._id // Check if the order ID is present in the payload
+        result.payload?.success &&
+        result.payload?.order?._id
       ) {
         toast.success("Payment successful! Your cart order has been placed.");
-        // Navigate to the order success page with the new order ID
+
         navigate(`/account/orders`);
       } else {
         // Handle cases where payment was successful but backend verification failed
@@ -119,28 +111,24 @@ export const startRazorpayCartPayment = async ({
             " Please contact support with Payment ID: " +
             response.razorpay_payment_id
         );
-        // Navigate to a payment failed page or show an appropriate message
         navigate("/");
       }
     },
     prefill: {
-      // Pre-fill user details for a smoother checkout experience
       name: user?.name || "",
       email: user?.email || "",
-      contact: selectedAddress?.phone || user?.phone || "", // Prioritize address phone, then user phone
+      contact: selectedAddress?.phone || user?.phone || "",
     },
     notes: {
-      // Add relevant notes for the payment record
       addressLine1: selectedAddress?.addressLine1 || "",
       city: selectedAddress?.city || "",
-      userId: user?._id || "Guest", // Include user ID if available
+      userId: user?._id || "Guest",
     },
     theme: {
-      color: "#10b981", // Your brand's primary color for the Razorpay popup
+      color: "#10b981",
     },
   };
 
-  // Create and open the Razorpay payment object
   const paymentObject = new window.Razorpay(options);
 
   // Attach a listener for payment failure events
@@ -155,5 +143,5 @@ export const startRazorpayCartPayment = async ({
     navigate("/");
   });
 
-  paymentObject.open(); // Open the Razorpay modal
+  paymentObject.open();
 };

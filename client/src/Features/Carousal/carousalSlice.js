@@ -3,7 +3,6 @@ import axios from "axios";
 import { GET_CAROUSAL } from "../../utils/config";
 import { BASE_URL } from "../../utils/config";
 
-// ✅ Async thunk to fetch carousels
 export const fetchCarousels = createAsyncThunk(
   "carousel/fetchCarousels",
   async (_, { rejectWithValue }) => {

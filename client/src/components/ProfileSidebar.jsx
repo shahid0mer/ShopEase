@@ -52,7 +52,7 @@ const ProfileSidebar = ({ isOpen, onClose }) => {
             <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center">
               <span className="text-emerald-600 mr-2">🛍️</span>
               <span>ShopEase</span>
-              <span className="text-xs ml-2 bg-blue-100 text-blue-800 px-2 py-1 rounded-full dark:bg-blue-900 dark:text-blue-300">
+              <span className="text-xs ml-2 bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full dark:bg-emerald-900 dark:text-emerald-300">
                 User
               </span>
             </h2>
@@ -79,14 +79,14 @@ const ProfileSidebar = ({ isOpen, onClose }) => {
                   }}
                   className={`flex items-center px-4 py-3 rounded-lg transition-colors ${
                     isActive(item.path)
-                      ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900 dark:text-blue-300"
+                      ? "bg-emerald-50 text-emerald-700 font-medium dark:bg-emerald-900 dark:text-emerald-300"
                       : "text-gray-600 hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-800"
                   }`}
                 >
                   <span className="text-lg mr-3">{item.icon}</span>
                   <span>{item.label}</span>
                   {isActive(item.path) && (
-                    <span className="ml-auto w-1.5 h-6 bg-blue-500 rounded-full"></span>
+                    <span className="ml-auto w-1.5 h-6 bg-[var(--primary)] rounded-full"></span>
                   )}
                 </Link>
               </li>

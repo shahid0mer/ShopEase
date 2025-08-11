@@ -1,4 +1,3 @@
-// src/components/DarkModeInitializer.jsx
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {

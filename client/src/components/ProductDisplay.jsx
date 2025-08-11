@@ -1,21 +1,34 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { fetchProductById } from "../Features/Product/productSlice";
 import BreadcrumbTrail from "./BreadcrumbTrail";
 import { AnimatePresence, motion } from "framer-motion";
+import { addToCartAsync } from "../Features/Cart/cartSlice";
+import { toast } from "sonner";
 
 const ProductDisplay = () => {
   const { productId } = useParams();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const {
     loading,
     error,
     ProductInfo: product,
   } = useSelector((state) => state.product);
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
   const [thumbnail, setThumbnail] = useState(null);
-  const [showFullDescription, setShowFullDescription] = useState(false); // Controls expansion
+  const [showFullDescription, setShowFullDescription] = useState(false);
+
+  const handleAddToCart = (product) => {
+    dispatch(addToCartAsync({ product_id: product._id, quantity: 1 }));
+    if (!isAuthenticated) {
+      toast.error("Please sign in to add to Cart");
+    } else {
+      toast.success(`${product.name} added to cart`);
+    }
+  };
 
   useEffect(() => {
     dispatch(fetchProductById(productId));
@@ -167,10 +180,25 @@ const ProductDisplay = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row items-center mt-6 sm:mt-10 gap-3 sm:gap-4 text-base">
-            <button className="w-full py-3 sm:py-3.5 cursor-pointer font-medium bg-[var(--primary-light)] text-[var(--neutral-800)] hover:bg-[var(--primary)] active:scale-95 transition">
+            <button
+              className="w-full py-3 sm:py-3.5 cursor-pointer font-medium bg-[var(--primary-light)] text-[var(--neutral-800)] hover:bg-[var(--primary)] active:scale-95 transition"
+              onClick={() => handleAddToCart(product)}
+            >
               Add to Cart
             </button>
-            <button className="w-full py-3 sm:py-3.5 cursor-pointer font-medium bg-[var(--secondary)] text-white hover:bg-[var(--secondary-dark)] active:scale-95 transition">
+            <button
+              className="w-full py-3 sm:py-3.5 cursor-pointer font-medium bg-[var(--secondary)] text-white hover:bg-[var(--secondary-dark)] active:scale-95 transition"
+              onClick={() =>
+                navigate("/checkout", {
+                  state: {
+                    product: {
+                      ...product,
+                      quantity: 1,
+                    },
+                  },
+                })
+              }
+            >
               Buy now
             </button>
           </div>

@@ -7,7 +7,6 @@ import {
 } from "../Features/User/authSlice";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { shopEaseToast } from "../utils/shopEaseToast";
 import { toast } from "sonner";
 
 const Login = ({ onClose }) => {
@@ -47,17 +46,17 @@ const Login = ({ onClose }) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!email || !password) {
-      shopEaseToast.error("Please fill in all required fields.");
+      toast.error("Please fill in all required fields.");
       return;
     }
 
     if (!emailRegex.test(email)) {
-      shopEaseToast.error("Please enter a valid email address.");
+      toast.error("Please enter a valid email address.");
       return;
     }
 
     if (password.length < 6) {
-      shopEaseToast.error("Password must be at least 6 characters.");
+      toast.error("Password must be at least 6 characters.");
       return;
     }
 
@@ -66,12 +65,12 @@ const Login = ({ onClose }) => {
         await dispatch(loginUser({ email, password })).unwrap();
       } else {
         if (!fullName || !confirmPassword) {
-          shopEaseToast.error("Please fill in all fields for registration.");
+          toast.error("Please fill in all fields for registration.");
           return;
         }
 
         if (password !== confirmPassword) {
-          shopEaseToast.error("Passwords do not match.");
+          toast.error("Passwords do not match.");
           return;
         }
 

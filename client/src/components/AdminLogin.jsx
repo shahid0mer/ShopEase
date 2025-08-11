@@ -46,7 +46,6 @@ const AdminLogin = () => {
       alert("Login successful!");
       navigate("/admin/dashboard");
     } catch (err) {
-      // Already handled by redux slice `error`, optionally show alert
       console.error("Login error:", err);
     }
   };
@@ -122,7 +121,6 @@ const AdminLogin = () => {
               )}
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
@@ -156,7 +154,6 @@ const AdminLogin = () => {
               )}
             </button>
 
-            {/* Show Login Error */}
             {error && (
               <p className="text-center text-sm text-red-600 mt-2 dark:text-red-400">
                 {error}

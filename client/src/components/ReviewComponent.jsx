@@ -18,7 +18,6 @@ import { toast } from "sonner";
 const Loader = () => (
   <div className="flex justify-center items-center py-8">
     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>{" "}
-    {/* Dark mode loader color */}
   </div>
 );
 
@@ -30,29 +29,22 @@ const ReviewComponent = ({ productId }) => {
     error = null,
     success = false,
   } = useSelector((state) => state.reviews) || {};
-  console.log("Reviews state:", reviews);
 
   const { user: userInfo } = useSelector((state) => state.auth) || {};
 
-  // --- Component State ---
   const [activeTab, setActiveTab] = useState("all");
   const [ratingFilter, setRatingFilter] = useState(0);
 
-  // State for adding a new review
   const [newReview, setNewReview] = useState({ rating: 0, content: "" });
-  const [hoverRating, setHoverRating] = useState(0); // For star rating hover effect
-  const [showReviewForm, setShowReviewForm] = useState(false); // To toggle visibility of add review form
+  const [hoverRating, setHoverRating] = useState(0);
+  const [showReviewForm, setShowReviewForm] = useState(false);
 
-  // State for editing an existing review
-  const [editingReviewId, setEditingReviewId] = useState(null); // Stores the _id of the review being edited
+  const [editingReviewId, setEditingReviewId] = useState(null);
   const [editReviewData, setEditReviewData] = useState({
     rating: 0,
     content: "",
-  }); // Data for the edit form
+  });
 
-  // --- Effects ---
-
-  // Effect to fetch reviews when component mounts or productId changes
   useEffect(() => {
     if (productId) {
       if (userInfo) {
@@ -66,11 +58,11 @@ const ReviewComponent = ({ productId }) => {
   useEffect(() => {
     if (success) {
       if (editingReviewId) {
-        alert("Review updated successfully!");
+        toast.success("Review updated successfully!");
         setEditingReviewId(null);
         setEditReviewData({ rating: 0, content: "" });
       } else {
-        alert("Review operation completed successfully!");
+        toast.success("Review operation completed successfully!");
         setNewReview({ rating: 0, content: "" });
         setShowReviewForm(false);
       }
@@ -85,7 +77,6 @@ const ReviewComponent = ({ productId }) => {
     }
   }, [success, error, dispatch, editingReviewId, productId]);
 
-  // --- Calculated Values ---
   const averageRating =
     reviews.length > 0
       ? reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length
@@ -100,61 +91,47 @@ const ReviewComponent = ({ productId }) => {
   const filteredReviews = reviews.filter((review) => {
     const matchesTab =
       activeTab === "all" ||
-      (activeTab === "withMedia" && review.images?.length > 0) || // Assuming 'images' field exists on review
-      (activeTab === "verified" && review.verified); // Assuming 'verified' field exists on review
+      (activeTab === "withMedia" && review.images?.length > 0) ||
+      (activeTab === "verified" && review.verified);
     const matchesRating = ratingFilter === 0 || review.rating === ratingFilter;
     return matchesTab && matchesRating;
   });
 
-  // --- Handlers ---
-
-  // Handler for submitting a new review
   const handleSubmitReview = (e) => {
     e.preventDefault();
 
     if (!userInfo) {
-      // Prevent unauthenticated submission
-      alert("Please log in to submit a review.");
+      toast.info("Please log in to submit a review.");
       return;
     }
     if (newReview.rating > 0 && newReview.content.trim() !== "") {
       const reviewPayload = {
-        product_id: productId, // Crucial: This must match backend's expected 'product_id'
+        product_id: productId,
         rating: newReview.rating,
         content: newReview.content,
       };
       dispatch(addReview(reviewPayload));
     } else {
-      alert("Please provide a rating and content for your review.");
+      toast.error("Please provide a rating and content for your review.");
     }
   };
 
-  // Handler for clicking the 'Edit' button on an existing review
   const handleEditClick = (review) => {
-    setEditingReviewId(review._id); // Set the ID of the review to be edited
-    setEditReviewData({ rating: review.rating, content: review.content }); // Pre-fill the edit form
-    setShowReviewForm(false); // Hide the "add new review" form if it's open
+    setEditingReviewId(review._id);
+    setEditReviewData({ rating: review.rating, content: review.content });
+    setShowReviewForm(false);
   };
 
-  // Handler for submitting the updated review
   const handleUpdateReview = (e) => {
     e.preventDefault();
     console.log("handleUpdateReview called!");
     if (!userInfo) {
-      console.log(
-        "handleUpdateReview: User not logged in, preventing dispatch."
-      );
-      alert("Please log in to update a review.");
+      toast.error("Please log in to update a review.");
       return;
     }
     if (!editingReviewId) {
-      console.log(
-        "handleUpdateReview: editingReviewId is null/undefined, preventing dispatch."
-      );
       return;
     }
-
-    console.log("handleUpdateReview: editingReviewId:", editingReviewId);
 
     if (editReviewData.rating > 0 && editReviewData.content.trim() !== "") {
       dispatch(
@@ -163,10 +140,10 @@ const ReviewComponent = ({ productId }) => {
           rating: editReviewData.rating,
           content: editReviewData.content,
         }),
-        alert("updated") // Consider using a toast notification library instead of alert for better UX
+        toast.success("Review Updated")
       );
     } else {
-      alert("Please provide a rating and content for the update.");
+      toast.info("Please provide a rating and content for the update.");
     }
   };
 
@@ -176,17 +153,27 @@ const ReviewComponent = ({ productId }) => {
     setEditReviewData({ rating: 0, content: "" });
   };
 
-  // Handler for deleting a review
   const handleDeleteClick = (reviewId) => {
-    if (window.confirm("Are you sure you want to delete this review?")) {
-      dispatch(deleteReview({ reviewId }));
-    }
+    toast("Are you sure you want to delete this review?", {
+      action: {
+        label: "Delete",
+        onClick: () => {
+          dispatch(deleteReview({ reviewId }));
+          toast.success("Review deleted");
+        },
+      },
+      cancel: {
+        label: "Cancel",
+        onClick: () => {
+          toast.info("Deletion cancelled");
+        },
+      },
+      duration: 6000,
+    });
   };
 
-  // Placeholder for helpfulness voting
   const handleVote = (reviewId, isHelpful) => {
-    console.log(`Voting on review ${reviewId}, helpful: ${isHelpful}`);
-    // You would dispatch another thunk here for voting
+    // console.log(`Voting on review ${reviewId}, helpful: ${isHelpful}`);
   };
 
   return (
@@ -194,30 +181,25 @@ const ReviewComponent = ({ productId }) => {
       {/* Loader always visible when loading */}
       {loading && <Loader />}
 
-      {/* Review Summary Section */}
       <div
         className="bg-white rounded-lg shadow-md p-6 mb-8
                       dark:bg-neutral-800 dark:shadow-neutral-900/50"
       >
         {" "}
-        {/* Dark mode background & shadow */}
         <h2
           className="text-2xl font-bold mb-4 text-gray-800
                        dark:text-neutral-100"
         >
           {" "}
-          {/* Dark mode heading text */}
           Customer Reviews
         </h2>
         <div className="flex flex-col md:flex-row items-start md:items-center gap-8">
-          {/* Average Rating Display */}
           <div className="text-center">
             <div
               className="text-5xl font-bold text-gray-900
                             dark:text-neutral-50"
             >
               {" "}
-              {/* Dark mode rating number */}
               {averageRating.toFixed(1)}
             </div>
             <div className="flex justify-center mt-2">
@@ -227,7 +209,7 @@ const ReviewComponent = ({ productId }) => {
                   className={`h-6 w-6 ${
                     star <= Math.round(averageRating)
                       ? "text-yellow-400"
-                      : "text-gray-300 dark:text-neutral-600" // Dark mode inactive star color
+                      : "text-gray-300 dark:text-neutral-600"
                   }`}
                 />
               ))}
@@ -237,12 +219,10 @@ const ReviewComponent = ({ productId }) => {
                           dark:text-neutral-400"
             >
               {" "}
-              {/* Dark mode review count text */}
               {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
             </p>
           </div>
 
-          {/* Rating Distribution Bars */}
           <div className="flex-1 w-full">
             {ratingDistribution.map(({ star, count, percent }) => (
               <div key={star} className="flex items-center mb-2 gap-2">
@@ -251,7 +231,6 @@ const ReviewComponent = ({ productId }) => {
                                 dark:text-neutral-300"
                 >
                   {" "}
-                  {/* Dark mode star label */}
                   {star} star
                 </div>
                 <div
@@ -259,7 +238,6 @@ const ReviewComponent = ({ productId }) => {
                                 dark:bg-neutral-700"
                 >
                   {" "}
-                  {/* Dark mode bar background */}
                   <div
                     className="h-4 bg-yellow-400 rounded-full transition-all duration-500"
                     style={{ width: `${percent}%` }}
@@ -270,7 +248,6 @@ const ReviewComponent = ({ productId }) => {
                                 dark:text-neutral-400"
                 >
                   {" "}
-                  {/* Dark mode count text */}
                   {count}
                 </div>
               </div>
@@ -279,114 +256,107 @@ const ReviewComponent = ({ productId }) => {
         </div>
       </div>
 
-      {/* Write Review Button & Form Toggle */}
       <div className="mb-6">
-        {/* Only allow writing a review if user is logged in AND not currently editing */}
         {userInfo ? (
           <button
             onClick={() => {
-              setShowReviewForm(!showReviewForm); // Toggle visibility of add form
-              setEditingReviewId(null); // Hide edit form when opening add form
+              setShowReviewForm(!showReviewForm);
+              setEditingReviewId(null);
             }}
             className="bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all text-white font-medium py-2 px-4 rounded-md
-                       dark:bg-blue-700 dark:hover:bg-blue-600 dark:active:scale-95 dark:text-white" // Dark mode button
-            disabled={loading} // Disable if any operation is in progress
+                       dark:bg-blue-700 dark:hover:bg-blue-600 dark:active:scale-95 dark:text-white"
+            disabled={loading}
           >
             {showReviewForm ? "Cancel Add Review" : "Write a Review"}
           </button>
         ) : (
           <p className="text-gray-600 text-sm dark:text-neutral-400">
             {" "}
-            {/* Dark mode login prompt */}
             Please log in to write a review.
           </p>
         )}
       </div>
 
       {/* Conditional rendering for ADD NEW REVIEW Form */}
-      {showReviewForm &&
-        !editingReviewId && ( // Only show if adding, and not editing
-          <div
-            className="bg-white rounded-lg shadow-md p-6 mb-8
+      {showReviewForm && !editingReviewId && (
+        <div
+          className="bg-white rounded-lg shadow-md p-6 mb-8
                           dark:bg-neutral-800 dark:shadow-neutral-900/50"
-          >
-            {" "}
-            <h3 className="text-xl font-bold mb-4 dark:text-neutral-100">
-              Write Your Review
-            </h3>{" "}
-            {error && toast.error(error)}
-            <form onSubmit={handleSubmitReview}>
-              <div className="mb-4">
-                <label
-                  className="block text-sm font-medium text-gray-700 mb-2
+        >
+          {" "}
+          <h3 className="text-xl font-bold mb-4 dark:text-neutral-100">
+            Write Your Review
+          </h3>{" "}
+          {error && toast.error(error)}
+          <form onSubmit={handleSubmitReview}>
+            <div className="mb-4">
+              <label
+                className="block text-sm font-medium text-gray-700 mb-2
                                   dark:text-neutral-300"
-                >
-                  {" "}
-                  {/* Dark mode label */}
-                  Your Rating
-                </label>
-                <div className="flex">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      type="button"
-                      key={star}
-                      onClick={() =>
-                        setNewReview({ ...newReview, rating: star })
-                      }
-                      onMouseEnter={() => setHoverRating(star)}
-                      onMouseLeave={() => setHoverRating(0)}
-                      className="p-1 text-gray-300"
-                    >
-                      <StarIcon
-                        className={`h-8 w-8 transition-colors ${
-                          star <= (hoverRating || newReview.rating)
-                            ? "text-yellow-400"
-                            : "text-gray-300 dark:text-neutral-600" // Dark mode inactive star color
-                        }`}
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <label
-                  htmlFor="newComment"
-                  className="block text-sm font-medium text-gray-700 mb-1
-                                    dark:text-neutral-300" // Dark mode label
-                >
-                  Your Review
-                </label>
-                <textarea
-                  id="newComment"
-                  rows="4"
-                  value={newReview.content}
-                  onChange={(e) =>
-                    setNewReview({ ...newReview, content: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500
-                             dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-200 dark:placeholder-neutral-400 dark:focus:ring-blue-400 dark:focus:border-blue-400" // Dark mode textarea
-                  placeholder="What did you like or dislike?"
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400
-                           dark:bg-blue-700 dark:hover:bg-blue-600 dark:active:scale-95 dark:text-white dark:disabled:bg-neutral-600 dark:focus:ring-blue-400 dark:focus:ring-offset-neutral-800" // Dark mode submit button
-                disabled={
-                  loading || newReview.rating === 0 || !newReview.content.trim()
-                }
               >
-                {loading ? "Submitting..." : "Submit Review"}
-              </button>
-            </form>
-          </div>
-        )}
+                {" "}
+                Your Rating
+              </label>
+              <div className="flex">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    type="button"
+                    key={star}
+                    onClick={() => setNewReview({ ...newReview, rating: star })}
+                    onMouseEnter={() => setHoverRating(star)}
+                    onMouseLeave={() => setHoverRating(0)}
+                    className="p-1 text-gray-300"
+                  >
+                    <StarIcon
+                      className={`h-8 w-8 transition-colors ${
+                        star <= (hoverRating || newReview.rating)
+                          ? "text-yellow-400"
+                          : "text-gray-300 dark:text-neutral-600"
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label
+                htmlFor="newComment"
+                className="block text-sm font-medium text-gray-700 mb-1
+                                    dark:text-neutral-300"
+              >
+                Your Review
+              </label>
+              <textarea
+                id="newComment"
+                rows="4"
+                value={newReview.content}
+                onChange={(e) =>
+                  setNewReview({ ...newReview, content: e.target.value })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500
+                             dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-200 dark:placeholder-neutral-400 dark:focus:ring-blue-400 dark:focus:border-blue-400" // Dark mode textarea
+                placeholder="What did you like or dislike?"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400
+                           dark:bg-blue-700 dark:hover:bg-blue-600 dark:active:scale-95 dark:text-white dark:disabled:bg-neutral-600 dark:focus:ring-blue-400 dark:focus:ring-offset-neutral-800" // Dark mode submit button
+              disabled={
+                loading || newReview.rating === 0 || !newReview.content.trim()
+              }
+            >
+              {loading ? "Submitting..." : "Submit Review"}
+            </button>
+          </form>
+        </div>
+      )}
 
       {/* Conditional rendering for EDIT REVIEW Form */}
-      {editingReviewId && ( // Only show if a review is being edited
+      {editingReviewId && (
         <div
           className="bg-white rounded-lg shadow-md p-6 mb-8
                         dark:bg-neutral-800 dark:shadow-neutral-900/50"
@@ -424,7 +394,7 @@ const ReviewComponent = ({ productId }) => {
                       className={`h-8 w-8 transition-colors ${
                         star <= (hoverRating || editReviewData.rating)
                           ? "text-yellow-400"
-                          : "text-gray-300 dark:text-neutral-600" // Dark mode inactive star color
+                          : "text-gray-300 dark:text-neutral-600"
                       }`}
                     />
                   </button>
@@ -436,7 +406,7 @@ const ReviewComponent = ({ productId }) => {
               <label
                 htmlFor="editComment"
                 className="block text-sm font-medium text-gray-700 mb-1
-                                  dark:text-neutral-300" // Dark mode label
+                                  dark:text-neutral-300"
               >
                 Your Review
               </label>
@@ -501,7 +471,7 @@ const ReviewComponent = ({ productId }) => {
                     className={`h-5 w-5 ${
                       star <= review.rating
                         ? "text-yellow-400"
-                        : "text-gray-300 dark:text-neutral-600" // Dark mode inactive star color
+                        : "text-gray-300 dark:text-neutral-600"
                     }`}
                   />
                 ))}
@@ -511,13 +481,9 @@ const ReviewComponent = ({ productId }) => {
                             dark:text-neutral-400"
               >
                 {" "}
-                {/* Dark mode author/date text */}
-                {/* Check if user_id is populated (object) or just an ID string */}
                 by {review.user_id?.name || "Anonymous"} •{" "}
                 {new Date(review.createdAt || review.date).toLocaleDateString()}
               </p>
-              {/* Conditional Edit/Delete Buttons for the owner of the review */}
-              {/* Only show if user is logged in AND their ID matches the review's user_id */}
               {userInfo &&
                 (userInfo._id === review.user_id ||
                   userInfo._id === review.user_id?._id) && (
@@ -525,16 +491,16 @@ const ReviewComponent = ({ productId }) => {
                     <button
                       onClick={() => handleEditClick(review)}
                       className="text-blue-500 hover:text-blue-700 text-sm
-                                 dark:text-blue-400 dark:hover:text-blue-300" // Dark mode edit button
-                      disabled={loading} // Disable if any operation is in progress
+                                 dark:text-blue-400 dark:hover:text-blue-300"
+                      disabled={loading}
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDeleteClick(review._id)}
                       className="text-red-500 hover:text-red-700 text-sm
-                                 dark:text-red-400 dark:hover:text-red-300" // Dark mode delete button
-                      disabled={loading} // Disable if any operation is in progress
+                                 dark:text-red-400 dark:hover:text-red-300"
+                      disabled={loading}
                     >
                       Delete
                     </button>
@@ -543,17 +509,15 @@ const ReviewComponent = ({ productId }) => {
               <p className="mt-3 text-gray-700 dark:text-neutral-200">
                 {review.content}
               </p>{" "}
-              {/* Dark mode review content */}
               <div
                 className="mt-4 flex items-center text-sm text-gray-500
                               dark:text-neutral-400"
               >
                 {" "}
-                {/* Dark mode helpfulness text */}
                 <button
                   onClick={() => handleVote(review._id, true)}
                   className="flex items-center mr-4 hover:text-blue-600
-                             dark:hover:text-blue-400" // Dark mode helpfulness hover
+                             dark:hover:text-blue-400"
                 >
                   <ThumbUpIcon className="h-4 w-4 mr-1" />
                   Helpful ({review.helpfulCount || 0})
@@ -561,7 +525,7 @@ const ReviewComponent = ({ productId }) => {
                 <button
                   onClick={() => handleVote(review._id, false)}
                   className="flex items-center hover:text-blue-600
-                             dark:hover:text-blue-400" // Dark mode helpfulness hover
+                             dark:hover:text-blue-400"
                 >
                   <ThumbDownIcon className="h-4 w-4 mr-1" />
                   Not Helpful ({review.notHelpfulCount || 0})
@@ -575,10 +539,8 @@ const ReviewComponent = ({ productId }) => {
                           dark:bg-neutral-800 dark:shadow-neutral-900/30"
           >
             {" "}
-            {/* Dark mode no reviews card */}
             <p className="text-gray-500 dark:text-neutral-400">
               {" "}
-              {/* Dark mode no reviews text */}
               Be the first to review this product!
             </p>
           </div>

@@ -1,4 +1,3 @@
-// src/components/DarkModeToggle.jsx
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -12,7 +11,7 @@ const DarkModeToggle = () => {
 
   const handleToggle = () => {
     dispatch(toggleDarkMode());
-    // Save preference to localStorage
+
     localStorage.setItem("darkMode", (!darkMode).toString());
   };
 

@@ -8,8 +8,6 @@ const RootLayout = () => {
 
   return (
     <>
-      {/* The main content area. Its background will typically be set by child components or a global body/html dark mode class. */}
-      {/* We add a dark mode background here to ensure a consistent base. */}
       <main className="min-h-screen bg-white dark:bg-neutral-950 ">
         <div
           className={

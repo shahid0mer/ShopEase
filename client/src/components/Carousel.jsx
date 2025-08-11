@@ -19,26 +19,22 @@ const Carousel = () => {
     dispatch(fetchCarousels());
   }, [dispatch]);
 
-  // Animation variants for fade effect
   const fadeInOutVariants = {
     initial: { opacity: 0 },
     animate: { opacity: 1 },
     exit: { opacity: 0 },
   };
 
-  // Function to go to next slide without resetting timer
   const autoNextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % banners.length);
   };
 
-  // User-triggered next slide that resets auto-timer
   const goToNextSlide = () => {
     clearInterval(intervalRef.current);
     setCurrentSlide((prev) => (prev + 1) % banners.length);
     startAutoSlide();
   };
 
-  // User-triggered previous slide that resets auto-timer
   const goToPrevSlide = () => {
     clearInterval(intervalRef.current);
     setCurrentSlide((prev) => (prev - 1 + banners.length) % banners.length);
@@ -96,22 +92,17 @@ const Carousel = () => {
           ></motion.div>
         </AnimatePresence>
 
-        {/* Overlay with responsive gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent"></div>
 
-        {/* Centered Text Content with responsive adjustments */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-white z-10 text-center px-4">
-          {/* Responsive title sizes */}
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 sm:mb-3 md:mb-4 drop-shadow-md font-montserrat">
             {title}
           </h2>
 
-          {/* Responsive subtitle sizes and max-width */}
           <p className="text-sm sm:text-base md:text-lg lg:text-xl mb-3 sm:mb-4 md:mb-5 lg:mb-6 drop-shadow-sm max-w-xs sm:max-w-sm md:max-w-md lg:max-w-xl px-2">
             {subtitle}
           </p>
 
-          {/* Responsive button */}
           <button
             className="bg-orange-600 hover:translate-y-1 active:scale-95 hover:bg-orange-700 text-white font-semibold px-4 py-2 sm:px-5 sm:py-2.5 md:px-6 md:py-3 rounded-md shadow-lg transition duration-300 text-sm sm:text-base"
             onClick={handleShopClick}
@@ -120,7 +111,6 @@ const Carousel = () => {
           </button>
         </div>
 
-        {/* Navigation Arrows - responsive sizing and positioning */}
         <button
           onClick={goToPrevSlide}
           className="absolute left-2 active:scale-95 sm:left-4 top-1/2 transform -translate-y-1/2 p-1.5 sm:p-2 rounded-full bg-gray-200 bg-opacity-60 text-gray-700 hover:bg-opacity-80 z-20 transition-all"

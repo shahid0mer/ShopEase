@@ -75,7 +75,6 @@ export default function Otp1() {
               className="shadow-xs flex w-[64px] items-center justify-center rounded-lg border border-stroke bg-white p-2 text-center text-2xl font-medium text-gray-5 outline-none sm:text-4xl dark:border-dark-3 dark:bg-white/5"
             />
           ))}
-          {/* You can conditionally render a submit button here based on otp length */}
         </form>
       </div>
     </section>

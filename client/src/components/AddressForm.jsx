@@ -130,15 +130,27 @@ const AddressForm = () => {
     setShowForm(true);
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this address?")) {
-      try {
-        await dispatch(deleteAddress(id)).unwrap();
-        toast.success("Address deleted");
-      } catch (error) {
-        toast.error(error.message || "Failed to delete address");
-      }
-    }
+  const handleDelete = (id) => {
+    toast("Are you sure you want to delete this address?", {
+      action: {
+        label: "Delete",
+        onClick: async () => {
+          try {
+            await dispatch(deleteAddress(id)).unwrap();
+            toast.success("Address deleted");
+          } catch (error) {
+            toast.error(error.message || "Failed to delete address");
+          }
+        },
+      },
+      cancel: {
+        label: "Cancel",
+        onClick: () => {
+          toast.info("Deletion cancelled");
+        },
+      },
+      duration: 6000,
+    });
   };
 
   const handleSetDefault = async (id) => {

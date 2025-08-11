@@ -17,10 +17,12 @@ import Pagination from "../components/Pagination";
 import { fetchProductsWithFilters } from "../Features/Product/productSlice";
 import ProductSkeletonCard from "../components/ProductSkeletonCard";
 import noproductfound from "../assets/no-product-found.png";
+import { fetchCategories } from "../Features/Product/categorySlice";
 
 const Products = () => {
   const { categoryId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { categories } = useSelector((state) => state.category);
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
@@ -35,37 +37,27 @@ const Products = () => {
   );
 
   const handleSortChange = (newSort) => {
-    // Create new URLSearchParams from current search params
     const newParams = new URLSearchParams(searchParams);
 
-    // Update sort and reset page to 1
     newParams.set("sort", newSort);
     newParams.set("page", "1");
 
-    // Always preserve the keyword if it exists
     if (keyword) {
       newParams.set("keyword", keyword);
     }
 
-    // Always preserve the category if we're on a category page
     if (categoryId) {
       newParams.set("categoryId", categoryId);
     }
 
-    console.log("Setting sort with params:", Object.fromEntries(newParams));
-
-    // Update the URL using React Router's setSearchParams
     setSearchParams(newParams);
   };
 
-  // Memoize the fetch function to prevent unnecessary re-renders
   const fetchProducts = useCallback(() => {
-    // Get current URL parameters
     const urlKeyword = searchParams.get("keyword") || "";
     const urlSort = searchParams.get("sort") || "createdAt_desc";
     const urlPage = parseInt(searchParams.get("page")) || 1;
 
-    // Determine the category - prioritize route param over URL param
     const effectiveCategoryId =
       categoryId || searchParams.get("categoryId") || "";
 
@@ -77,30 +69,26 @@ const Products = () => {
       sort: urlSort,
     };
 
-    console.log("Fetching products with filters:", filters);
-    console.log("Route categoryId:", categoryId);
-    console.log("URL keyword:", urlKeyword);
-    console.log("URL sort:", urlSort);
-    console.log("URL page:", urlPage);
-
     dispatch(fetchProductsWithFilters(filters));
   }, [dispatch, searchParams, categoryId, limit]);
 
-  // Single useEffect that handles all URL parameter changes
   useEffect(() => {
-    // Add a small delay to prevent rapid successive calls
     const timeoutId = setTimeout(() => {
       fetchProducts();
     }, 100);
 
     return () => clearTimeout(timeoutId);
-  }, [searchParams, categoryId]); // Simplified dependencies
+  }, [searchParams, categoryId]);
+
+  useEffect(() => {
+    if (!categories || categories.length === 0) {
+      dispatch(fetchCategories());
+    }
+  }, [dispatch, categories]);
 
   return (
-    // Main container for the entire products page
     <div className="bg-white dark:bg-neutral-950">
       {" "}
-      {/* Added dark mode background */}
       <div className="mx-auto">
         <BreadcrumbTrail />
         <div className="my-6">
@@ -117,30 +105,26 @@ const Products = () => {
                             dark:bg-neutral-800 dark:shadow-neutral-900/30"
             >
               {" "}
-              {loading && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {loading ? (
+                <div className="grid ...">
                   {[...Array(8)].map((_, index) => (
                     <ProductSkeletonCard key={index} />
                   ))}
                 </div>
-              )}
-              {error && (
-                <div
-                  className="w-auto h-[993px] flex flex-col justify-center items-center animate-pulse
-                                dark:bg-neutral-800"
-                >
-                  {" "}
+              ) : error ? (
+                <div className="w-auto h-[993px] flex flex-col justify-center items-center animate-pulse dark:bg-neutral-800">
                   <img
                     src={noproductfound}
                     alt="No product found"
                     className="dark:filter dark:invert dark:opacity-80"
-                  />{" "}
+                  />
                   <p className="text-red-500 mt-4 dark:text-red-400">
-                    Failed to load products.
-                  </p>{" "}
+                    Products Doesnt Exist .
+                  </p>
                 </div>
+              ) : (
+                <ProductGrid />
               )}
-              <ProductGrid />
             </div>
           </div>
         </div>

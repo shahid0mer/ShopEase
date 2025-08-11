@@ -47,7 +47,7 @@
   }
 
   .dark {
-    /* This '.dark' class is what your React components will toggle on document.documentElement */
+    /* This '.dark' class is what  React components will toggle on document.documentElement */
     --primary: #0d9488; /* Slightly different primary for dark */
     --primary-dark: #0f766e;
     --primary-light: #064e3b;

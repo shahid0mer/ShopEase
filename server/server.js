@@ -14,14 +14,20 @@ await connectDB();
 await connectCloudinary();
 
 const allowedOrigin = [
-  "https://shopease-frontend-2.onrender.com",
+  "https://ecommerce-web-app-464615.web.app",
   "http://localhost:5173",
 ];
 
 app.use(express.json());
 app.use(cookieParser());
 
-app.use(cors({ origin: allowedOrigin, credentials: true }));
+app.use(
+  cors({
+    origin: allowedOrigin,
+    credentials: true,
+    allowedHeaders: ["Authorization", "Content-Type"],
+  })
+);
 
 app.get("/", (req, res) => {
   res.send("Api is running");

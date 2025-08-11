@@ -1,4 +1,4 @@
-export const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+export const BASE_URL = import.meta.env.VITE_API_BASE_URL_PRODUCTION;
 
 export const PRODUCT_URI = `${BASE_URL}/api/product/add`;
 export const GET_SELLER_PRODUCTS_URL = `${BASE_URL}/api/seller/viewall`;

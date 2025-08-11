@@ -1,4 +1,3 @@
-// Filter.jsx
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProductsWithFilters } from "../Features/Product/productSlice.js";
@@ -11,7 +10,6 @@ const Filter = ({ sort = null, keyword = "" }) => {
   const [searchParams] = useSearchParams();
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
-  // Get current URL parameters
   const urlKeyword = searchParams.get("keyword") || keyword;
   const urlSort = searchParams.get("sort") || sort;
   const urlPage = parseInt(searchParams.get("page")) || 1;
@@ -108,7 +106,6 @@ const Filter = ({ sort = null, keyword = "" }) => {
       ratings: null,
     });
 
-    // Clear filters but preserve keyword and other URL params
     dispatch(
       fetchProductsWithFilters({
         category: categoryId || "",
@@ -126,7 +123,7 @@ const Filter = ({ sort = null, keyword = "" }) => {
     dispatch(
       fetchProductsWithFilters({
         category: effectiveCategoryId,
-        keyword: urlKeyword, // Use URL keyword to maintain search
+        keyword: urlKeyword,
         page: 1,
         limit: 20,
         minPrice: activeFilters.priceRange.min,
@@ -139,7 +136,6 @@ const Filter = ({ sort = null, keyword = "" }) => {
     setIsMobileFilterOpen(false);
   };
 
-  // Apply filters when price range changes (with debounce)
   useEffect(() => {
     const timer = setTimeout(() => {
       applyFilters();
@@ -147,7 +143,6 @@ const Filter = ({ sort = null, keyword = "" }) => {
     return () => clearTimeout(timer);
   }, [activeFilters.priceRange]);
 
-  // Apply filters when other filters change
   useEffect(() => {
     if (
       activeFilters.categories.length > 0 ||
@@ -242,27 +237,23 @@ const Filter = ({ sort = null, keyword = "" }) => {
                           dark:bg-blue-900 dark:bg-opacity-30"
           >
             {" "}
-            {/* Dark mode search keyword background */}
             <p
               className="text-sm text-blue-700
                           dark:text-blue-300"
             >
               {" "}
-              {/* Dark mode search keyword text */}
               <span className="font-medium">Searching for:</span> "{urlKeyword}"
             </p>
           </div>
         )}
 
         <div className="space-y-8 h-[calc(100%-180px)] overflow-y-auto pb-4">
-          {/* Price Range */}
           <div>
             <h3
               className="text-base font-medium text-gray-800 mb-4
                            dark:text-neutral-200"
             >
               {" "}
-              {/* Dark mode price range heading */}
               Price Range
             </h3>
             <div className="flex items-center gap-3 mb-3">
@@ -272,7 +263,6 @@ const Filter = ({ sort = null, keyword = "" }) => {
                                   dark:text-neutral-400"
                 >
                   {" "}
-                  {/* Dark mode label */}
                   Min
                 </label>
                 <div className="relative">
@@ -298,7 +288,6 @@ const Filter = ({ sort = null, keyword = "" }) => {
                                   dark:text-neutral-400"
                 >
                   {" "}
-                  {/* Dark mode label */}
                   Max
                 </label>
                 <div className="relative">

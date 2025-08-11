@@ -28,7 +28,6 @@ const AuthWrapper = ({ children }) => {
     }
   }, [dispatch, initialized, isAuthenticated, user?._id]);
 
-  // Optionally, you can show a loading spinner or null while authentication is being checked
   // if (!initialized) {
   //   return <div>Loading authentication...</div>;
   // }
