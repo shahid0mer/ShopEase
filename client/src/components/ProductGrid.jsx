@@ -79,7 +79,7 @@ const ProductGrid = ({ product }) => {
                                  dark:text-emerald-400"
                 >
                   {" "}
-                  {/* Dark mode green text */}${product.offerPrice}
+                  ${product.offerPrice}
                 </span>
                 <span
                   className="relative text-[var(--neutral-500)] text-xs sm:text-sm line-through
@@ -120,15 +120,19 @@ const ProductGrid = ({ product }) => {
                   className="flex-1 bg-[var(--secondary)] text-white font-medium text-sm sm:text-base py-2 sm:py-3 px-2 sm:px-4 hover:bg-[var(--secondary-dark)] transition duration-300 active:scale-95
                              dark:bg-amber-600 dark:hover:bg-amber-500" // Dark mode background for checkout button
                   onClick={() => {
-                    navigate("/checkout", {
-                      state: {
-                        product: {
-                          ...product,
-                          quantity: 1,
-                        },
-                      },
-                    });
-                  }}
+                        if (!isAuthenticated) {
+                          toast.error("Please sign in to buy");
+                        } else {
+                          navigate("/checkout", {
+                            state: {
+                              product: {
+                                ...product,
+                                quantity: 1,
+                              },
+                            },
+                          });
+                        }
+                      }}
                 >
                   Check Out
                 </button>

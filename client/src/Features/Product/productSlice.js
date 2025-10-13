@@ -136,11 +136,28 @@ export const fetchProductsWithFilters = createAsyncThunk(
   }
 );
 
+export const fetchRandomProducts = createAsyncThunk(
+  "product/fetchRandomProducts",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api/product/top-picks`, {
+        withCredentials: true,
+      });
+      return response.data.products;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch random products"
+      );
+    }
+  }
+);
+
 const productSlice = createSlice({
   name: "product",
   initialState: {
     products: [],
     filteredProducts: [],
+    topPicks: [],
     loading: false,
     error: null,
     successMessage: "",
@@ -235,7 +252,19 @@ const productSlice = createSlice({
       .addCase(fetchProductsWithFilters.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      });
+      })
+      .addCase(fetchRandomProducts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchRandomProducts.fulfilled, (state, action) => {
+        state.loading = false;
+        state.topPicks = action.payload;
+      })
+      .addCase(fetchRandomProducts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
   },
 });
 

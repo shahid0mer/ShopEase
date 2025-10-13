@@ -6,6 +6,7 @@ import {
   addProduct,
   changeStock,
   getAllProducts,
+  getRandomProducts,
   productView,
   updatefullProduct,
 } from "../controllers/productController.js";
@@ -14,6 +15,7 @@ import { getFilteredOrSearchedProducts } from "../controllers/categoryController
 const productRouter = express.Router();
 
 productRouter.get("/list", getFilteredOrSearchedProducts);
+productRouter.get("/top-picks", getRandomProducts);
 productRouter.get("/viewall", getAllProducts);
 productRouter.post(
   "/add",
@@ -28,7 +30,6 @@ productRouter.put(
   authRole(["seller"]),
   updatefullProduct
 );
-
 productRouter.get("/:id", productView);
 
 export default productRouter;

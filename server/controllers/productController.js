@@ -220,3 +220,19 @@ export const getProductsByCategory = async (req, res) => {
 export const searchProducts = async (req, res) => {
   res.status(200).send({ message: "product controller" });
 };
+
+
+// Get random products
+export const getRandomProducts = async (req, res) => {
+  try {
+    const count = await Product.countDocuments();
+    const randomProducts = await Product.aggregate([
+      { $sample: { size: 3 } } 
+    ]);
+
+    res.status(200).json({ products: randomProducts });
+  } catch (error) {
+    console.error("Error fetching random products:", error.message);
+    res.status(500).json({ message: "Failed to fetch random products" });
+  }
+};

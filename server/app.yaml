@@ -20,4 +20,8 @@ env_variables:
   MAIL_USER: "90e56e003@smtp-brevo.com"
   MAIL_PASS: "h7cBg6aSvIX8CDOH"
   SENDER_EMAIL: "shopease00000@gmail.com"
-  CLIENT_URL: http://localhost:5173
+
+  # CLIENT_URL: http://localhost:5173
+
+  CLIENT_URL: https://ecommerce-web-app-464615.web.app
+

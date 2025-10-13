@@ -75,9 +75,9 @@ const App = () => {
     );
   };
 
-  // AnimatedRoutes is a component where AnimatePresence and Routes reside
+  
   function AnimatedRoutes() {
-    const location = useLocation(); // useLocation hook must be inside a Router
+    const location = useLocation(); 
 
     return (
       <AnimatePresence mode="wait">

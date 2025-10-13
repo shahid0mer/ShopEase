@@ -4,20 +4,20 @@ import User from "../models/User.js";
 const authRole = (allowedRoles = []) => {
   return async (req, res, next) => {
     const { token } = req.cookies;
-    console.log(" Token from cookies:", token);
+    // console.log(" Token from cookies:", token);
 
     if (!token) {
       return res
         .status(401)
         .json({ success: false, message: "No token. Not authorized" });
     }
-    console.log(" Token from cookies:", token);
+    // console.log(" Token from cookies:", token);
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       console.log("🧾 Decoded JWT:", decoded);
 
       const user = await User.findById(decoded.id);
-      console.log(" Fetched User:", user);
+      // console.log(" Fetched User:", user);
 
       if (!user) {
         return res
@@ -36,8 +36,8 @@ const authRole = (allowedRoles = []) => {
       console.log(" req.user set:", req.user);
       next();
     } catch (error) {
-      console.log("Error in authRole:", error.message);
-      console.log(" Token from cookies:", token);
+      // console.log("Error in authRole:", error.message);
+      // console.log(" Token from cookies:", token);
       res.status(401).json({ success: false, message: error.message });
     }
   };
