@@ -14,8 +14,8 @@ import { getFilteredOrSearchedProducts } from "../controllers/categoryController
 
 const productRouter = express.Router();
 
-productRouter.get("/list", getFilteredOrSearchedProducts);
 productRouter.get("/top-picks", getRandomProducts);
+productRouter.get("/list", getFilteredOrSearchedProducts);
 productRouter.get("/viewall", getAllProducts);
 productRouter.post(
   "/add",

@@ -15,6 +15,7 @@ await connectCloudinary();
 
 const allowedOrigin = [
   "https://ecommerce-web-app-464615.web.app",
+  "https://shopease-tkdz.onrender.com",
   "http://localhost:5173",
 ];
 

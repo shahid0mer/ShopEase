@@ -1,7 +1,7 @@
 // features/product/productSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-import { BASE_URL } from "../../utils/config";
+import { BASE_URL, RANDOMPRODUCT_URI } from "../../utils/config";
 import {
   PRODUCT_URI,
   GET_SELLER_PRODUCTS_URL,
@@ -140,7 +140,7 @@ export const fetchRandomProducts = createAsyncThunk(
   "product/fetchRandomProducts",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${BASE_URL}/api/product/top-picks`, {
+      const response = await axios.get(`${RANDOMPRODUCT_URI}`, {
         withCredentials: true,
       });
       return response.data.products;

@@ -1,5 +1,7 @@
 export const BASE_URL = import.meta.env.VITE_API_BASE_URL_PRODUCTION;
 
+
+export const RANDOMPRODUCT_URI=`${BASE_URL}/api/product/top-picks`;
 export const PRODUCT_URI = `${BASE_URL}/api/product/add`;
 export const GET_SELLER_PRODUCTS_URL = `${BASE_URL}/api/seller/viewall`;
 export const CHANGE_STOCK_URI = `${BASE_URL}/api/product/update`;
