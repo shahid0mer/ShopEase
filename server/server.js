@@ -35,6 +35,11 @@ app.get("/", (req, res) => {
 
 app.use("/api", router);
 
+app.get("/health", (req, res) => {
+  console.log("Health ping received at:", new Date().toISOString());
+  res.status(200).json({ status: "OK", uptime: process.uptime() });
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port http://localhost:${PORT}`);
 });
